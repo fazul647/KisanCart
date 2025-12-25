@@ -148,7 +148,10 @@ export default function Navbar() {
   />
 )}
 
-              <NavItem to="/farmers" icon={FaUsers} label="Farmers" />
+{user?.role !== "admin" && (
+  <NavItem to="/farmers" icon={FaUsers} label="Farmers" />
+)}
+
               <NavItem to="/about" icon={FaInfoCircle} label="About" />
 
               {/* CART (BUYER ONLY) */}
@@ -179,6 +182,7 @@ export default function Navbar() {
                     </button>
 
                     <ul className="dropdown-menu dropdown-menu-end shadow-lg border-0 rounded-3 mt-2">
+                      
                       {/* COMMON USER INFO */}
                       <li className="dropdown-header px-3 py-2">
                         <div className="d-flex align-items-center gap-2">
@@ -194,7 +198,7 @@ export default function Navbar() {
                       <li><hr className="dropdown-divider mx-3" /></li>
 
                       {/* FARMER OPTIONS */}
-                      {user.role === "farmer" && (
+                      {user.role !== "admin" && user.role === "farmer" && (
                         <>
                           <li>
                             <Link className="dropdown-item d-flex align-items-center gap-2" to="/dashboard" onClick={closeMobileMenu}>
@@ -224,7 +228,7 @@ export default function Navbar() {
                       )}
 
                       {/* BUYER OPTIONS */}
-                      {user.role === "buyer" && (
+                      {user.role !== "admin" && user.role === "buyer" && (
                         <>
                           <li>
                             <Link className="dropdown-item d-flex align-items-center gap-2" to="/buyer/dashboard" onClick={closeMobileMenu}>
