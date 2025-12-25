@@ -1,0 +1,194 @@
+/* AUTH (Login/Register) shared styling */
+.kc-auth-page {
+  min-height: calc(100vh - 90px); /* leaves room for fixed navbar */
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  padding: 40px 16px;
+  background: linear-gradient(180deg, #f8fdf8 0%, #ffffff 100%);
+  font-family: Inter, system-ui, -apple-system, "Segoe UI", Roboto, Arial;
+}
+
+/* card */
+/* Bigger, premium-looking card */
+.kc-auth-card {
+  width: 650px;               /* was 420px → now wider */
+  min-height: auto;          /* adds height so it feels spacious */
+  border-radius: 16px;
+  background: white;
+  padding: 36px 30px;         /* bigger padding */
+  border: 1px solid rgba(15,23,42,0.05);
+  box-shadow: 0 12px 28px rgba(0,0,0,0.07);
+}
+
+
+/* leaf logo */
+.kc-leaf {
+  width: 60px;
+  height: 60px;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  margin: 0 auto 14px;
+  border-radius: 14px;
+  background: linear-gradient(180deg,#e7f9ec,#dff6e4);
+  font-size: 26px;
+  box-shadow: 0 8px 22px rgba(47,158,68,0.10);
+}
+
+
+/* inputs: green outline focus */
+.kc-input:focus {
+  border-color: #1a7e36 !important;
+  box-shadow: 0 6px 18px rgba(26,126,54,0.10) !important;
+  outline: none;
+}
+
+/* remove double borders for input-group text and input */
+.input-group .input-group-text {
+  border-right: 0;
+  border-color: rgba(15,23,42,0.06);
+  background: white;
+}
+.input-group .form-control {
+  border-left: 0;
+}
+
+/* success button styling (bigger rounded) */
+.btn-success {
+  background: linear-gradient(90deg,#16a34a,#4fd06a);
+  border: none;
+  border-radius: 8px;
+  box-shadow: 0 10px 26px rgba(21,122,60,0.08);
+  font-size: 16px;
+}
+
+/* subtle link color */
+.kc-auth-card .text-success {
+  color: #1a7e36 !important;
+}
+
+/* responsive adjustments */
+@media (max-width: 480px) {
+  .kc-auth-card { width: 92%; padding: 18px; }
+  .kc-leaf { width: 46px; height: 46px; font-size: 20px; }
+}
+/* Make form text bigger */
+.kc-label {
+  font-size: 16px;
+  font-weight: 600;
+}
+
+.kc-input {
+  font-size: 17px !important;
+  padding: 14px !important;
+  border-radius: 10px !important;
+}
+
+/* ------------------------------
+   Farmer Dashboard Page Styles
+--------------------------------*/
+.kc-dashboard-page {
+  background: linear-gradient(180deg, #f7fbf7 0%, #ffffff 100%);
+  min-height: 100vh;
+  padding-bottom: 50px;
+}
+
+/* Page Title */
+.kc-page-title {
+  font-size: 30px;
+  font-weight: 700;
+  margin-bottom: 6px;
+  color: #12351f;
+}
+
+/* Add New Product Button */
+.kc-add-btn {
+  background: linear-gradient(90deg, #16a34a, #4fd06a);
+  border: none;
+  padding: 10px 18px;
+  border-radius: 10px;
+  font-size: 15px;
+  box-shadow: 0 10px 22px rgba(21, 122, 60, 0.08);
+}
+
+/* ------------------------------
+   STAT CARDS
+--------------------------------*/
+.kc-stat-card {
+  background: white;
+  border-radius: 14px;
+  padding: 24px;
+  min-height: 135px;
+  border: 1px solid rgba(0, 0, 0, 0.05);
+  box-shadow: 0 4px 20px rgba(0, 0, 0, 0.06);
+  transition: 0.2s ease;
+}
+
+/* Hover Elevation */
+.kc-stat-card:hover {
+  transform: translateY(-3px);
+  box-shadow: 0 8px 28px rgba(0, 0, 0, 0.10);
+}
+
+/* Small title (Products, Orders, Messages...) */
+.kc-stat-title {
+  font-size: 14px;
+  color: #6b7280;
+  font-weight: 600;
+}
+
+/* Big number */
+.kc-stat-value {
+  font-size: 28px;
+  font-weight: 800;
+  margin-top: 6px;
+  color: #0f172a;
+}
+
+/* Icon right side */
+.kc-stat-ico {
+  font-size: 28px;
+  opacity: 0.9;
+}
+
+/* View links under each card */
+.kc-stat-link {
+  margin-top: 14px;
+  font-size: 14px;
+  font-weight: 600;
+}
+
+.kc-stat-link a {
+  color: #16a34a;
+  text-decoration: none;
+}
+
+.kc-stat-link a:hover {
+  text-decoration: underline;
+}
+
+/* ------------------------------
+   Recent Orders Card
+--------------------------------*/
+.kc-recent-card {
+  border-radius: 14px;
+  border: 1px solid rgba(0, 0, 0, 0.05);
+  box-shadow: 0 4px 18px rgba(0, 0, 0, 0.05);
+}
+
+/* ------------------------------
+   MOBILE STYLES
+--------------------------------*/
+@media (max-width: 768px) {
+  .kc-page-title {
+    font-size: 22px;
+  }
+}
+
+
+.product-img {
+  width: 100%;
+  height: 220px;        /* SAME height for all images */
+  object-fit: cover;   /* crop but no distortion */
+}
