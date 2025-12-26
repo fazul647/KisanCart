@@ -4,6 +4,8 @@ import { FaLeaf, FaUsers, FaHandshake, FaTruck, FaChartLine, FaUserCheck, FaSeed
 import { GiFarmer, GiFruitBowl, GiPlantWatering } from 'react-icons/gi';
 import "../styles/About.css";
 import myPhoto from "../assets/fazul.png";
+import API from "../api/axios";
+
 
 export default function About() {
 const [stats, setStats] = useState({
@@ -17,16 +19,16 @@ useEffect(() => {
   fetchStats();
 }, []);
 
+
+
 async function fetchStats() {
   try {
-    const res = await fetch("http://localhost:5000/api/stats");
-    const data = await res.json();
-    setStats(data);
+    const res = await API.get("/stats");
+    setStats(res.data);
   } catch (err) {
     console.error("Failed to load stats", err);
   }
 }
-
 
   return (
     <>
