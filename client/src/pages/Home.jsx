@@ -1,5 +1,7 @@
 import React, { useEffect, useState } from "react";
 import { Link } from "react-router-dom";
+import API from "../api/axios";
+
 
 export default function Home() {
   const [currentImage, setCurrentImage] = useState(0);
@@ -28,13 +30,13 @@ export default function Home() {
   
   async function fetchStats() {
     try {
-      const res = await fetch("http://localhost:5000/api/stats");
-      const data = await res.json();
-      setStats(data);
+      const res = await API.get("/stats");
+      setStats(res.data);
     } catch (err) {
       console.error("Failed to load stats", err);
     }
   }
+  
   
 
   return (
