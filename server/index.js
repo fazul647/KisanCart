@@ -15,11 +15,15 @@ connectDB();
 // CORS middleware (only once)
 app.use(
   cors({
-    origin: "http://localhost:5173",
-    methods: ["GET", "POST", "PUT", "DELETE", "OPTIONS","PATCH"],
+    origin: [
+      "http://localhost:5173",
+      "https://kisan-cart.vercel.app"
+    ],
+    methods: ["GET", "POST", "PUT", "DELETE", "OPTIONS", "PATCH"],
     allowedHeaders: ["Content-Type", "Authorization"],
   })
 );
+
 
 // body parser
 app.use(express.json());
