@@ -141,16 +141,16 @@ export default function Navbar() {
                 <NavItem to="/farmer/products" icon={FaSeedling} label="My Products" />
               )}
               {user?.role === "admin" && (
-  <NavItem
-    to="/admin"
-    icon={FaTachometerAlt}
-    label="Admin Panel"
-  />
-)}
+                <NavItem
+                  to="/admin"
+                  icon={FaTachometerAlt}
+                  label="Admin Panel"
+                />
+              )}
 
-{user?.role !== "admin" && (
-  <NavItem to="/farmers" icon={FaUsers} label="Farmers" />
-)}
+              {user?.role !== "admin" && (
+                <NavItem to="/farmers" icon={FaUsers} label="Farmers" />
+              )}
 
               <NavItem to="/about" icon={FaInfoCircle} label="About" />
 
@@ -172,6 +172,7 @@ export default function Navbar() {
                     <button
                       className="btn btn-outline-success d-flex align-items-center gap-2 dropdown-toggle rounded-pill"
                       data-bs-toggle="dropdown"
+                      data-bs-display="static"
                       aria-expanded="false"
                       onClick={closeMobileMenu}
                     >
@@ -304,15 +305,13 @@ export default function Navbar() {
       {/* Spacer for fixed navbar */}
       <div style={{ height: '80px' }} />
 
-      {/* Overlay for mobile menu */}
+      {/* Overlay for mobile menu - NOW CORRECTLY PLACED */}
       {isMobileMenuOpen && (
         <div 
           className="mobile-menu-overlay"
           onClick={closeMobileMenu}
         />
       )}
-
-     
     </>
   );
 }
