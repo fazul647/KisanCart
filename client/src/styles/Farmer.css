@@ -1,0 +1,43 @@
+.farmer-card {
+    border-radius: 15px;
+    transition: all 0.3s ease;
+  }
+  
+  .farmer-card:hover {
+    transform: translateY(-5px);
+    box-shadow: 0 8px 20px rgba(0,0,0,0.1);
+  }
+  
+  .avatar-circle {
+    width: 60px;
+    height: 60px;
+    background: #198754;
+    color: white;
+    font-size: 24px;
+    font-weight: bold;
+    border-radius: 50%;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    margin: auto;
+  }
+  .farmer-img {
+    width: 70px;
+    height: 70px;
+    border-radius: 50%;
+    object-fit: cover;
+  }
+  
+  .avatar-circle {
+    width: 70px;
+    height: 70px;
+    background: #198754;
+    color: white;
+    font-size: 24px;
+    font-weight: bold;
+    border-radius: 50%;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    margin: auto;
+  }

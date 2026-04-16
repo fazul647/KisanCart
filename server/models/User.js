@@ -1,10 +1,10 @@
 const mongoose = require("mongoose");
 
 const addressSchema = new mongoose.Schema({
-  street: String,
-  city: String,
-  state: String,
-  zipcode: String
+  street: { type: String, required: true },
+  city: { type: String, required: true },
+  state: { type: String, required: true },
+  zipcode: { type: String, required: true }
 }, { _id: false });
 
 const userSchema = new mongoose.Schema({
@@ -18,11 +18,21 @@ const userSchema = new mongoose.Schema({
 
   role: {
     type: String,
-    enum: ["farmer", "buyer","admin"],   // consumer = buyer
+    enum: ["farmer", "buyer","admin"],
     default: "buyer"
   },
 
-  address: addressSchema
+  address: {
+    type: addressSchema,
+    required: true
+  },
+
+  // ✅ ADD HERE (inside schema)
+  profilePic: {
+    type: String,
+    default: ""
+  }
+
 }, { timestamps: true });
 
 userSchema.methods.toJSON = function () {

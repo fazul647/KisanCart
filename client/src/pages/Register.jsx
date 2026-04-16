@@ -189,20 +189,9 @@ export default function Register() {
               </select>
             </div>
 
-            {/* Address Section - Optional */}
-            <div className="address-toggle">
-              <button
-                type="button"
-                className={`toggle-btn ${showAddress ? "active" : ""}`}
-                onClick={() => setShowAddress(!showAddress)}
-              >
-                <span className="toggle-icon">{showAddress ? "−" : "+"}</span>
-                Add Address (Optional)
-                <span className="toggle-hint">for better delivery experience</span>
-              </button>
-            </div>
+            
 
-            {showAddress && (
+            {(
               <div className="address-section">
                 <div className="form-group">
                   <input

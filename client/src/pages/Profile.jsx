@@ -8,7 +8,13 @@ export default function Profile() {
   const [saveMsg, setSaveMsg] = useState(null);
   const [error, setError] = useState(null);
 
-  // ONLY personal details (common for buyer & farmer)
+  const [image, setImage] = useState(null);
+  const [preview, setPreview] = useState(
+    stored?.profilePic
+      ? `http://localhost:5000${stored.profilePic}`
+      : null
+  );
+
   const [form, setForm] = useState({
     name: stored?.name || "",
     email: stored?.email || "",
@@ -21,7 +27,6 @@ export default function Profile() {
     },
   });
 
-  /* LOAD LATEST PROFILE (OPTIONAL BUT GOOD) */
   useEffect(() => {
     API.get("/auth/me")
       .then(res => {
@@ -37,11 +42,14 @@ export default function Profile() {
             zipcode: u.address?.zipcode || "",
           },
         });
+
+        if (u.profilePic) {
+          setPreview(`http://localhost:5000${u.profilePic}`);
+        }
       })
-      .catch(() => {})
+      .catch(() => {});
   }, []);
 
-  /* HANDLE CHANGE */
   function handleChange(path, value) {
     if (path.startsWith("address.")) {
       const k = path.split(".")[1];
@@ -51,7 +59,28 @@ export default function Profile() {
     }
   }
 
-  /* SAVE PROFILE */
+  /* 🔥 IMAGE UPLOAD */
+  async function handleImageUpload() {
+    if (!image) return alert("Select image first");
+
+    const formData = new FormData();
+    formData.append("image", image);
+
+    const res = await API.post("/auth/upload-profile", formData, {
+      headers: { "Content-Type": "multipart/form-data" },
+    });
+
+    const updatedUser = {
+      ...stored,
+      profilePic: res.data.profilePic,
+    };
+
+    localStorage.setItem("kisan_user", JSON.stringify(updatedUser));
+
+    setPreview(`http://localhost:5000${res.data.profilePic}`);
+    alert("Profile photo updated ✅");
+  }
+
   async function saveProfile(e) {
     e.preventDefault();
     setSaveMsg(null);
@@ -65,7 +94,6 @@ export default function Profile() {
         address: form.address,
       });
 
-      // update localStorage
       if (res.data?.user) {
         localStorage.setItem("kisan_user", JSON.stringify(res.data.user));
       }
@@ -79,130 +107,109 @@ export default function Profile() {
   }
 
   return (
-    <div className="container" style={{ padding: "28px 20px", maxWidth: 700 }}>
-      <div className="mb-4">
-        <h2 className="kc-page-title">My Profile</h2>
-        <p className="text-muted mb-0">
-          Update your personal information
-        </p>
+    <div className="container" style={{ maxWidth: 700 }}>
+      
+      <h2 className="mb-3">My Profile</h2>
+
+      {/* 🔥 PROFILE IMAGE */}
+      <div className="text-center mb-4">
+        {preview ? (
+          <img
+            src={preview}
+            alt="profile"
+            style={{
+              width: 100,
+              height: 100,
+              borderRadius: "50%",
+              objectFit: "cover"
+            }}
+          />
+        ) : (
+          <div className="avatar-circle">
+            {form.name.charAt(0)}
+          </div>
+        )}
+
+        <div className="mt-2">
+          <input
+            type="file"
+            onChange={(e) => {
+              setImage(e.target.files[0]);
+              setPreview(URL.createObjectURL(e.target.files[0]));
+            }}
+          />
+
+          <button
+            className="btn btn-sm btn-success mt-2"
+            onClick={handleImageUpload}
+          >
+            Upload Photo
+          </button>
+        </div>
       </div>
 
       {saveMsg && <div className="alert alert-success">{saveMsg}</div>}
       {error && <div className="alert alert-danger">{error}</div>}
 
-      <div className="card p-4">
-        <form onSubmit={saveProfile}>
+      <form onSubmit={saveProfile}>
 
-          {/* NAME */}
-          <div className="mb-3">
-            <label className="form-label">Full Name</label>
+        <input
+          className="form-control mb-3"
+          value={form.name}
+          onChange={e => handleChange("name", e.target.value)}
+        />
+
+        <input
+          className="form-control mb-3"
+          value={form.email}
+          readOnly
+        />
+
+        <input
+          className="form-control mb-3"
+          value={form.phone}
+          onChange={e => handleChange("phone", e.target.value)}
+        />
+
+        <input
+          className="form-control mb-2"
+          placeholder="Street"
+          value={form.address.street}
+          onChange={e => handleChange("address.street", e.target.value)}
+        />
+
+        <div className="row">
+          <div className="col">
             <input
-              className="form-control form-control-lg"
-              value={form.name}
-              onChange={e => handleChange("name", e.target.value)}
-              required
+              className="form-control mb-2"
+              placeholder="City"
+              value={form.address.city}
+              onChange={e => handleChange("address.city", e.target.value)}
             />
           </div>
 
-          {/* EMAIL (READ ONLY) */}
-          <div className="mb-3">
-            <label className="form-label">Email</label>
+          <div className="col">
             <input
-              className="form-control form-control-lg"
-              value={form.email}
-              readOnly
-            />
-            <div className="form-text text-muted">
-              Email cannot be changed
-            </div>
-          </div>
-
-          {/* PHONE */}
-          <div className="mb-3">
-            <label className="form-label">Phone</label>
-            <input
-              className="form-control form-control-lg"
-              value={form.phone}
-              onChange={e => handleChange("phone", e.target.value)}
-              required
+              className="form-control mb-2"
+              placeholder="State"
+              value={form.address.state}
+              onChange={e => handleChange("address.state", e.target.value)}
             />
           </div>
+        </div>
 
-          {/* ADDRESS */}
-          <div className="mb-3">
-            <label className="form-label">Street</label>
-            <input
-              className="form-control"
-              value={form.address.street}
-              onChange={e => handleChange("address.street", e.target.value)}
-            />
-          </div>
+        <input
+          className="form-control mb-3"
+          placeholder="Zipcode"
+          value={form.address.zipcode}
+          onChange={e => handleChange("address.zipcode", e.target.value)}
+        />
 
-          <div className="row">
-            <div className="col-6 mb-3">
-              <label className="form-label">City</label>
-              <input
-                className="form-control"
-                value={form.address.city}
-                onChange={e => handleChange("address.city", e.target.value)}
-              />
-            </div>
+        <button className="btn btn-success">
+          {loading ? "Saving..." : "Save Changes"}
+        </button>
 
-            <div className="col-6 mb-3">
-              <label className="form-label">State</label>
-              <input
-                className="form-control"
-                value={form.address.state}
-                onChange={e => handleChange("address.state", e.target.value)}
-              />
-            </div>
-          </div>
-
-          <div className="mb-4">
-            <label className="form-label">Zipcode</label>
-            <input
-              className="form-control"
-              value={form.address.zipcode}
-              onChange={e => handleChange("address.zipcode", e.target.value)}
-            />
-          </div>
-
-          {/* ACTIONS */}
-          <div className="d-flex gap-2">
-            <button
-              type="submit"
-              className="btn btn-success"
-              disabled={loading}
-            >
-              {loading ? "Saving..." : "Save Changes"}
-            </button>
-
-            <button
-              type="button"
-              className="btn btn-outline-secondary"
-              onClick={() => {
-                const s = JSON.parse(localStorage.getItem("kisan_user") || "null");
-                if (s) {
-                  setForm({
-                    name: s.name || "",
-                    email: s.email || "",
-                    phone: s.phone || "",
-                    address: {
-                      street: s.address?.street || "",
-                      city: s.address?.city || "",
-                      state: s.address?.state || "",
-                      zipcode: s.address?.zipcode || "",
-                    },
-                  });
-                }
-              }}
-            >
-              Reset
-            </button>
-          </div>
-
-        </form>
-      </div>
+      </form>
     </div>
   );
 }

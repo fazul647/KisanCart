@@ -3,32 +3,26 @@ const Crop = require("../models/Crop");
 
 exports.getAllFarmers = async (req, res) => {
   try {
-    // 1️⃣ get all farmers (public fields only)
-    const farmers = await User.find(
-      { role: "farmer" },
-      "name address"
-    );
+    const farmers = await User.find({ role: "farmer" })
+      .select("name address profilePic");
 
-    // 2️⃣ count products for each farmer
-    const farmerData = await Promise.all(
-      farmers.map(async (f) => {
-        const count = await Crop.countDocuments({ farmer: f._id });
+    const farmersWithCount = await Promise.all(
+      farmers.map(async (farmer) => {
+        const productCount = await Crop.countDocuments({
+          farmer: farmer._id,
+        });
 
         return {
-          _id: f._id,
-          name: f.name,
-          address: {
-            city: f.address?.city || "",
-            state: f.address?.state || ""
-          },
-          productCount: count
+          ...farmer.toObject(),
+          productCount,
         };
       })
     );
 
-    res.json({ farmers: farmerData });
+    res.json({ farmers: farmersWithCount });
+
   } catch (err) {
-    console.error("Get farmers error:", err);
-    res.status(500).json({ message: "Server error" });
+    console.error(err);
+    res.status(500).json({ message: "Error fetching farmers" });
   }
 };

@@ -1,24 +1,16 @@
 import React, { useState, useEffect, useRef } from "react";
 import { NavLink, Link, useNavigate, useLocation } from "react-router-dom";
-import { 
-  FaLeaf, 
-  FaShoppingCart, 
-  FaUser, 
-  FaHome, 
-  FaSeedling, 
-  FaUsers, 
+import {
+  FaShoppingCart,
+  FaUser,
+  FaHome,
+  FaUsers,
   FaInfoCircle,
-  FaBox,
   FaSignOutAlt,
   FaBars,
   FaTimes,
-  FaShoppingBag,
-  FaChartLine,
-  FaEnvelope,
-  FaUserCircle,
-  FaTachometerAlt,
-  FaClipboardList
-} from 'react-icons/fa';
+  FaShoppingBag
+} from "react-icons/fa";
 import "./Navbar.css";
 
 export default function Navbar() {
@@ -26,8 +18,6 @@ export default function Navbar() {
   const location = useLocation();
   const [isMobileMenuOpen, setIsMobileMenuOpen] = useState(false);
   const [cartCount, setCartCount] = useState(0);
-  const [scrolled, setScrolled] = useState(false);
-  const [navbarHeight, setNavbarHeight] = useState(80);
   const navbarRef = useRef(null);
 
   let user = null;
@@ -35,301 +25,208 @@ export default function Navbar() {
     user = JSON.parse(localStorage.getItem("kisan_user"));
   } catch {}
 
-  // Handle scroll effect
   useEffect(() => {
-    const handleScroll = () => {
-      const isScrolled = window.scrollY > 10;
-      if (isScrolled !== scrolled) {
-        setScrolled(isScrolled);
-      }
-    };
-
-    window.addEventListener('scroll', handleScroll);
-    return () => window.removeEventListener('scroll', handleScroll);
-  }, [scrolled]);
-
-  // Get navbar height for spacer
-  useEffect(() => {
-    const updateNavbarHeight = () => {
-      if (navbarRef.current) {
-        setNavbarHeight(navbarRef.current.offsetHeight);
-      }
-    };
-    
-    updateNavbarHeight();
-    window.addEventListener('resize', updateNavbarHeight);
-    
-    return () => window.removeEventListener('resize', updateNavbarHeight);
-  }, []);
-
-  // Update cart count
-  useEffect(() => {
-    const updateCartCount = () => {
-      try {
-        const cart = JSON.parse(localStorage.getItem("kisan_cart")) || [];
-        setCartCount(cart.length);
-      } catch {
-        setCartCount(0);
-      }
-    };
-
-    updateCartCount();
-    window.addEventListener('storage', updateCartCount);
-    return () => window.removeEventListener('storage', updateCartCount);
+    const cart = JSON.parse(localStorage.getItem("kisan_cart")) || [];
+    setCartCount(cart.length);
   }, [location]);
 
   const handleLogout = () => {
     localStorage.clear();
     nav("/login");
-    setIsMobileMenuOpen(false);
   };
-
-  const toggleMobileMenu = () => {
-    setIsMobileMenuOpen(!isMobileMenuOpen);
-  };
-
-  const closeMobileMenu = () => {
-    setIsMobileMenuOpen(false);
-  };
-
-  const NavItem = ({ to, icon: Icon, label, badgeCount }) => (
-    <li className="nav-item">
-      <NavLink
-        to={to}
-        end={to === "/"}
-        className={({ isActive }) =>
-          `nav-link d-flex align-items-center gap-2 ${isActive ? "active" : ""}`
-        }
-        onClick={closeMobileMenu}
-      >
-        <Icon className="nav-icon" />
-        <span>{label}</span>
-        {badgeCount > 0 && (
-          <span className="badge bg-danger rounded-pill ms-1">
-            {badgeCount}
-          </span>
-        )}
-      </NavLink>
-    </li>
-  );
 
   return (
     <>
-      <nav 
-        ref={navbarRef}
-        className={`navbar navbar-expand-lg fixed-top ${scrolled ? 'navbar-scrolled' : 'navbar-transparent'}`}
-      >
+      <nav className="navbar navbar-expand-lg fixed-top bg-white shadow-sm">
         <div className="container">
+
           {/* LOGO */}
-          <Link 
-            className="navbar-brand d-flex align-items-center gap-2 fw-bold" 
-            to="/"
-            onClick={closeMobileMenu}
-          >
-            <div className="logo-icon bg-success rounded-circle d-flex align-items-center justify-content-center">
-              <FaLeaf className="text-white" />
-            </div>
-            <span className="text-success fs-4">KisanCart</span>
+          <Link className="navbar-brand fw-bold text-success" to="/">
+            🌾 KisanCart
           </Link>
 
           {/* MOBILE TOGGLE */}
           <button
-            className="navbar-toggler border-0"
-            type="button"
-            onClick={toggleMobileMenu}
-            aria-expanded={isMobileMenuOpen}
-            aria-label="Toggle navigation"
+            className="navbar-toggler"
+            onClick={() => setIsMobileMenuOpen(!isMobileMenuOpen)}
           >
-            {isMobileMenuOpen ? (
-              <FaTimes className="fs-4" />
-            ) : (
-              <FaBars className="fs-4" />
-            )}
+            {isMobileMenuOpen ? <FaTimes /> : <FaBars />}
           </button>
 
-          {/* NAV ITEMS */}
-          <div className={`collapse navbar-collapse ${isMobileMenuOpen ? 'show' : ''}`}>
+          <div className={`collapse navbar-collapse ${isMobileMenuOpen ? "show" : ""}`}>
             <ul className="navbar-nav ms-auto align-items-center gap-3">
-              <NavItem to="/" icon={FaHome} label="Home" />
 
+              {/* HOME */}
+              <li>
+                <NavLink to="/" className="nav-link">
+                  <FaHome /> Home
+                </NavLink>
+              </li>
+
+              {/* PRODUCTS (buyer only) */}
               {user?.role === "buyer" && (
-                <NavItem to="/products" icon={FaShoppingBag} label="Products" />
+                <li>
+                  <NavLink to="/products" className="nav-link">
+                    <FaShoppingBag /> Products
+                  </NavLink>
+                </li>
               )}
 
-              {user?.role === "farmer" && (
-                <NavItem to="/farmer/products" icon={FaSeedling} label="My Products" />
-              )}
-              {user?.role === "admin" && (
-                <NavItem
-                  to="/admin"
-                  icon={FaTachometerAlt}
-                  label="Admin Panel"
-                />
-              )}
-
+              {/* FARMERS */}
               {user?.role !== "admin" && (
-                <NavItem to="/farmers" icon={FaUsers} label="Farmers" />
+                <li>
+                  <NavLink to="/farmers" className="nav-link">
+                    <FaUsers /> Farmers
+                  </NavLink>
+                </li>
               )}
 
-              <NavItem to="/about" icon={FaInfoCircle} label="About" />
+              {/* 🔥 MY PRODUCTS (BOTH farmer & buyer) */}
+              {user && (
+                <li>
+                  <NavLink to="/farmer/products" className="nav-link">
+                    <FaShoppingBag /> My Products
+                  </NavLink>
+                </li>
+              )}
 
-              {/* CART (BUYER ONLY) */}
+              {/* ABOUT */}
+              <li>
+                <NavLink to="/about" className="nav-link">
+                  <FaInfoCircle /> About
+                </NavLink>
+              </li>
+
+              {/* CART (buyer only) */}
               {user?.role === "buyer" && (
-                <NavItem 
-                  to="/cart" 
-                  icon={FaShoppingCart} 
-                  label="Cart" 
-                  badgeCount={cartCount}
-                />
+                <li>
+                  <NavLink to="/cart" className="nav-link">
+                    <FaShoppingCart /> Cart ({cartCount})
+                  </NavLink>
+                </li>
               )}
 
-              {/* USER SECTION */}
+              {/* ================= USER ================= */}
               {user ? (
-                <>
-                  {/* USER DROPDOWN */}
-                  <li className="nav-item dropdown">
-                    <button
-                      className="btn btn-outline-success d-flex align-items-center gap-2 dropdown-toggle rounded-pill"
-                      data-bs-toggle="dropdown"
-                      data-bs-display="static"
-                      aria-expanded="false"
-                    >
+                <li className="nav-item dropdown">
+
+                  {/* BUTTON */}
+                  <button
+                    className="btn btn-outline-success d-flex align-items-center gap-2 dropdown-toggle rounded-pill"
+                    data-bs-toggle="dropdown"
+                  >
+                    {user?.profilePic ? (
+                      <img
+                        src={`http://localhost:5000${user.profilePic}`}
+                        className="nav-profile-img"
+                      />
+                    ) : (
                       <div className="user-avatar">
                         {user.name?.charAt(0).toUpperCase()}
                       </div>
-                      <span className="d-none d-lg-inline">{user.name?.split(" ")[0]}</span>
-                    </button>
+                    )}
 
-                    <ul className="dropdown-menu dropdown-menu-end shadow-lg border-0 rounded-3 mt-2">
-                      
-                      {/* COMMON USER INFO */}
-                      <li className="dropdown-header px-3 py-2">
-                        <div className="d-flex align-items-center gap-2">
-                          <div className="user-avatar-sm">
-                            {user.name?.charAt(0).toUpperCase()}
-                          </div>
-                          <div>
-                            <h6 className="fw-bold mb-0">{user.name}</h6>
-                            <small className="text-muted">{user.role === 'farmer' ? 'Farmer' : 'Buyer'}</small>
-                          </div>
+                    <span>{user.name?.split(" ")[0]}</span>
+                  </button>
+
+                  {/* DROPDOWN */}
+                  <ul className="dropdown-menu dropdown-menu-end">
+
+                    {/* USER INFO */}
+                    <li className="dropdown-header d-flex align-items-center gap-2">
+
+                      {user?.profilePic ? (
+                        <img
+                          src={`http://localhost:5000${user.profilePic}`}
+                          className="nav-profile-img-sm"
+                        />
+                      ) : (
+                        <div className="user-avatar-sm">
+                          {user.name?.charAt(0)}
                         </div>
-                      </li>
-                      <li><hr className="dropdown-divider mx-3" /></li>
-
-                      {/* FARMER OPTIONS */}
-                      {user.role !== "admin" && user.role === "farmer" && (
-                        <>
-                          <li>
-                            <Link className="dropdown-item d-flex align-items-center gap-2" to="/dashboard" onClick={closeMobileMenu}>
-                              <FaTachometerAlt />
-                              Dashboard
-                            </Link>
-                          </li>
-                          <li>
-                            <Link className="dropdown-item d-flex align-items-center gap-2" to="/profile" onClick={closeMobileMenu}>
-                              <FaUserCircle />
-                              Profile
-                            </Link>
-                          </li>
-                          <li>
-                            <Link className="dropdown-item d-flex align-items-center gap-2" to="/farmer/orders" onClick={closeMobileMenu}>
-                              <FaClipboardList />
-                              Orders
-                            </Link>
-                          </li>
-                          <li>
-                            <Link className="dropdown-item d-flex align-items-center gap-2" to="/messages" onClick={closeMobileMenu}>
-                              <FaEnvelope />
-                              Messages
-                            </Link>
-                          </li>
-                        </>
                       )}
 
-                      {/* BUYER OPTIONS */}
-                      {user.role !== "admin" && user.role === "buyer" && (
-                        <>
-                          <li>
-                            <Link className="dropdown-item d-flex align-items-center gap-2" to="/buyer/dashboard" onClick={closeMobileMenu}>
-                              <FaTachometerAlt />
-                              Dashboard
-                            </Link>
-                          </li>
-                          <li>
-                            <Link className="dropdown-item d-flex align-items-center gap-2" to="/buyer/profile" onClick={closeMobileMenu}>
-                              <FaUserCircle />
-                              Profile
-                            </Link>
-                          </li>
-                          <li>
-                            <Link className="dropdown-item d-flex align-items-center gap-2" to="/buyer/orders" onClick={closeMobileMenu}>
-                              <FaClipboardList />
-                              My Orders
-                            </Link>
-                          </li>
-                          <li>
-                            <Link className="dropdown-item d-flex align-items-center gap-2" to="/messages" onClick={closeMobileMenu}>
-                              <FaEnvelope />
-                              Messages
-                            </Link>
-                          </li>
-                        </>
-                      )}
+                      <div>
+                        <strong>{user.name}</strong>
+                        <br />
+                        <small>{user.role}</small>
+                      </div>
+                    </li>
 
-                      <li><hr className="dropdown-divider mx-3" /></li>
-                      
-                      {/* LOGOUT */}
-                      <li>
-                        <button
-                          className="dropdown-item d-flex align-items-center gap-2 text-danger"
-                          onClick={handleLogout}
-                        >
-                          <FaSignOutAlt />
-                          Logout
-                        </button>
-                      </li>
-                    </ul>
-                  </li>
-                </>
+                    <li><hr /></li>
+
+                    {/* DASHBOARD */}
+                    <li>
+                      <Link className="dropdown-item" to={
+                        user.role === "farmer" ? "/dashboard" : "/buyer/dashboard"
+                      }>
+                        Dashboard
+                      </Link>
+                    </li>
+
+                    {/* PROFILE */}
+                    <li>
+                      <Link className="dropdown-item" to="/profile">
+                        Profile
+                      </Link>
+                    </li>
+
+                    {/* 🔥 MY PRODUCTS */}
+                    <li>
+                      <Link className="dropdown-item" to="/farmer/products">
+                        My Products
+                      </Link>
+                    </li>
+
+                    {/* 🔥 ORDERS */}
+                    <li>
+                      <Link className="dropdown-item" to={
+                        user.role === "farmer" ? "/farmer/orders" : "/buyer/orders"
+                      }>
+                        Orders
+                      </Link>
+                    </li>
+
+                    {/* MESSAGES */}
+                    <li>
+                      <Link className="dropdown-item" to="/messages">
+                        Messages
+                      </Link>
+                    </li>
+
+                    <li><hr /></li>
+
+                    {/* LOGOUT */}
+                    <li>
+                      <button className="dropdown-item text-danger" onClick={handleLogout}>
+                        <FaSignOutAlt /> Logout
+                      </button>
+                    </li>
+
+                  </ul>
+                </li>
               ) : (
                 <>
-                  {/* LOGIN/REGISTER FOR GUESTS */}
-                  <li className="nav-item">
-                    <NavLink
-                      to="/login"
-                      className="nav-link d-flex align-items-center gap-2"
-                      onClick={closeMobileMenu}
-                    >
-                      <FaUser />
-                      Login
+                  <li>
+                    <NavLink to="/login" className="nav-link">
+                      <FaUser /> Login
                     </NavLink>
                   </li>
-                  <li className="nav-item">
-                    <NavLink 
-                      to="/register" 
-                      className="btn btn-success rounded-pill px-4"
-                      onClick={closeMobileMenu}
-                    >
+                  <li>
+                    <NavLink to="/register" className="btn btn-success">
                       Get Started
                     </NavLink>
                   </li>
                 </>
               )}
+              {/* ================= END USER ================= */}
+
             </ul>
           </div>
         </div>
       </nav>
 
-      {/* Dynamic spacer - adjusts to navbar height */}
-      <div style={{ height: `${navbarHeight}px` }} />
-
-      {/* Overlay for mobile menu */}
-      {isMobileMenuOpen && (
-        <div 
-          className="mobile-menu-overlay"
-          onClick={closeMobileMenu}
-        />
-      )}
+      <div style={{ height: "70px" }} />
     </>
   );
 }

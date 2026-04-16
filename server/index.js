@@ -8,6 +8,9 @@ const farmerRoutes = require("./routes/farmers");
 const chatRoute = require("./routes/chat");
 const auth = require("./middlewares/authMiddleware");
 
+const path = require("path");
+
+
 
 const app = express();
 const port = 5000;
@@ -48,7 +51,7 @@ app.use("/api/stats", require("./routes/stats"));
 
 app.use("/api/admin", require("./routes/admin"));
 
-
+app.use("/uploads", express.static(path.join(__dirname, "uploads")));
 // start server
 app.listen(port, () => {
   console.log("Server is listening on port 5000");

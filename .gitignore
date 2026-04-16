@@ -3,5 +3,9 @@ npm-debug.log*
 yarn-debug.log*
 yarn-error.log*
 
-
+server/uploads/
+node_modules
+.env
+client/.env
+server/.env
 

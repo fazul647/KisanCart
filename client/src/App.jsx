@@ -24,6 +24,7 @@ import AdminUsers from "./pages/AdminUsers";
 import AdminOrders from "./pages/AdminOrders";
 import Chatbot from "./pages/Chatbot";
 import ForgotPassword from "./pages/ForgetPassword";
+import ResetPassword from "./pages/ResetPassword";
 
 
 
@@ -64,6 +65,7 @@ export default function App() {
         <Route path="/admin/orders" element={<AdminOrders />} />
         <Route path="/chatbot" element={<Chatbot />} />
         <Route path="/forgot-password" element={<ForgotPassword />} />
+        <Route path="/reset-password/:token" element={<ResetPassword />} />
 
 
 
