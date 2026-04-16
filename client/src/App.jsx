@@ -22,6 +22,9 @@ import AdminDashboard from "./pages/AdminDashboard";
 import AdminProducts from "./pages/AdminProducts";
 import AdminUsers from "./pages/AdminUsers";
 import AdminOrders from "./pages/AdminOrders";
+import Chatbot from "./pages/Chatbot";
+import ForgotPassword from "./pages/ForgetPassword";
+
 
 
 
@@ -56,9 +59,11 @@ export default function App() {
         <Route path="/farmer/products/edit/:id" element={<EditProduct />} />
         <Route path="about" element={<About/>} />
         <Route path="/admin" element={<AdminDashboard />} />
-<Route path="/admin/products" element={<AdminProducts />} />
-<Route path="/admin/users" element={<AdminUsers />} />
-<Route path="/admin/orders" element={<AdminOrders />} />
+        <Route path="/admin/products" element={<AdminProducts />} />
+        <Route path="/admin/users" element={<AdminUsers />} />
+        <Route path="/admin/orders" element={<AdminOrders />} />
+        <Route path="/chatbot" element={<Chatbot />} />
+        <Route path="/forgot-password" element={<ForgotPassword />} />
 
 
 

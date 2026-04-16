@@ -320,6 +320,7 @@ export default function FarmerDashboard() {
               <i className="bi bi-person-circle"></i>
               My Profile
             </Link>
+            <Link to="/chatbot">AI Assistant</Link>
           </div>
         </div>
       </div>

@@ -1,4 +1,4 @@
-import React, { useState, useEffect } from "react";
+import React, { useState, useEffect, useRef } from "react";
 import { NavLink, Link, useNavigate, useLocation } from "react-router-dom";
 import { 
   FaLeaf, 
@@ -27,6 +27,8 @@ export default function Navbar() {
   const [isMobileMenuOpen, setIsMobileMenuOpen] = useState(false);
   const [cartCount, setCartCount] = useState(0);
   const [scrolled, setScrolled] = useState(false);
+  const [navbarHeight, setNavbarHeight] = useState(80);
+  const navbarRef = useRef(null);
 
   let user = null;
   try {
@@ -45,6 +47,20 @@ export default function Navbar() {
     window.addEventListener('scroll', handleScroll);
     return () => window.removeEventListener('scroll', handleScroll);
   }, [scrolled]);
+
+  // Get navbar height for spacer
+  useEffect(() => {
+    const updateNavbarHeight = () => {
+      if (navbarRef.current) {
+        setNavbarHeight(navbarRef.current.offsetHeight);
+      }
+    };
+    
+    updateNavbarHeight();
+    window.addEventListener('resize', updateNavbarHeight);
+    
+    return () => window.removeEventListener('resize', updateNavbarHeight);
+  }, []);
 
   // Update cart count
   useEffect(() => {
@@ -99,7 +115,10 @@ export default function Navbar() {
 
   return (
     <>
-      <nav className={`navbar navbar-expand-lg fixed-top ${scrolled ? 'navbar-scrolled' : 'navbar-transparent'}`}>
+      <nav 
+        ref={navbarRef}
+        className={`navbar navbar-expand-lg fixed-top ${scrolled ? 'navbar-scrolled' : 'navbar-transparent'}`}
+      >
         <div className="container">
           {/* LOGO */}
           <Link 
@@ -174,7 +193,6 @@ export default function Navbar() {
                       data-bs-toggle="dropdown"
                       data-bs-display="static"
                       aria-expanded="false"
-                      onClick={closeMobileMenu}
                     >
                       <div className="user-avatar">
                         {user.name?.charAt(0).toUpperCase()}
@@ -302,10 +320,10 @@ export default function Navbar() {
         </div>
       </nav>
 
-      {/* Spacer for fixed navbar */}
-      <div style={{ height: '80px' }} />
+      {/* Dynamic spacer - adjusts to navbar height */}
+      <div style={{ height: `${navbarHeight}px` }} />
 
-      {/* Overlay for mobile menu - NOW CORRECTLY PLACED */}
+      {/* Overlay for mobile menu */}
       {isMobileMenuOpen && (
         <div 
           className="mobile-menu-overlay"

@@ -2,9 +2,6 @@
   padding: 1rem 0;
   transition: all 0.3s ease;
   z-index: 1030;
-}
-
-.navbar-transparent {
   background: rgba(255, 255, 255, 0.95);
   backdrop-filter: blur(10px);
   box-shadow: 0 2px 20px rgba(0, 0, 0, 0.08);
@@ -14,6 +11,11 @@
   background: white;
   box-shadow: 0 4px 30px rgba(0, 0, 0, 0.1);
   padding: 0.5rem 0;
+}
+
+.navbar-transparent {
+  background: rgba(255, 255, 255, 0.95);
+  backdrop-filter: blur(10px);
 }
 
 .logo-icon {
@@ -100,7 +102,7 @@
   background: rgba(40, 167, 69, 0.1);
 }
 
-/* Mobile menu overlay - Now works with React state */
+/* Mobile menu overlay */
 .mobile-menu-overlay {
   position: fixed;
   top: 0;
@@ -140,8 +142,6 @@
   /* Show overlay when mobile menu is open */
   .mobile-menu-overlay {
     display: block;
-    opacity: 1;
-    visibility: visible;
   }
   
   .navbar-nav {

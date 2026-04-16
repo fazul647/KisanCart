@@ -5,6 +5,9 @@ const cors = require("cors");
 const connectDB = require("./config/db");
 const messageRoutes = require("./routes/messages");
 const farmerRoutes = require("./routes/farmers");
+const chatRoute = require("./routes/chat");
+const auth = require("./middlewares/authMiddleware");
+
 
 const app = express();
 const port = 5000;
@@ -37,7 +40,7 @@ app.get("/", (req, res) => {
 app.use("/api/auth", require("./routes/auth"));
 app.use("/api/crops", require("./routes/crops"));
 app.use("/api/orders", require("./routes/orders"));
-
+app.use("/api/chat", auth, chatRoute);
 
 app.use("/api/messages", messageRoutes);
 app.use("/api/farmers", farmerRoutes);

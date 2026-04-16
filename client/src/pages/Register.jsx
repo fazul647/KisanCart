@@ -1,7 +1,7 @@
-// client/src/pages/Register.jsx
 import React, { useState } from "react";
 import API from "../api/axios";
 import { useNavigate, Link } from "react-router-dom";
+import "../styles/Register.css";
 
 export default function Register() {
   const nav = useNavigate();
@@ -11,30 +11,50 @@ export default function Register() {
     phone: "",
     password: "",
     confirmPassword: "",
-    role: "buyer",
+    role: "farmer",
     address: { street: "", city: "", state: "", zipcode: "" },
   });
 
-  const [error, setError] = useState("");
+  const [errors, setErrors] = useState({});
   const [loading, setLoading] = useState(false);
+  const [showAddress, setShowAddress] = useState(false);
 
   function update(path, value) {
     if (path.startsWith("address.")) {
       const key = path.split(".")[1];
       setForm((f) => ({ ...f, address: { ...f.address, [key]: value } }));
+      // Clear error for this field
+      if (errors[`address.${key}`]) {
+        setErrors((e) => ({ ...e, [`address.${key}`]: "" }));
+      }
     } else {
       setForm((f) => ({ ...f, [path]: value }));
+      if (errors[path]) {
+        setErrors((e) => ({ ...e, [path]: "" }));
+      }
     }
+  }
+
+  function validateForm() {
+    const newErrors = {};
+
+    if (!form.name.trim()) newErrors.name = "Full name is required";
+    if (!form.email.trim()) newErrors.email = "Email is required";
+    else if (!/\S+@\S+\.\S+/.test(form.email)) newErrors.email = "Email is invalid";
+    if (!form.phone.trim()) newErrors.phone = "Phone number is required";
+    else if (!/^[0-9]{10}$/.test(form.phone.replace(/\D/g, ''))) newErrors.phone = "Phone number must be 10 digits";
+    if (!form.password) newErrors.password = "Password is required";
+    else if (form.password.length < 6) newErrors.password = "Password must be at least 6 characters";
+    if (form.password !== form.confirmPassword) newErrors.confirmPassword = "Passwords do not match";
+
+    setErrors(newErrors);
+    return Object.keys(newErrors).length === 0;
   }
 
   async function handleSubmit(e) {
     e.preventDefault();
-    setError("");
-
-    if (form.password !== form.confirmPassword) {
-      setError("Passwords do not match");
-      return;
-    }
+    
+    if (!validateForm()) return;
 
     setLoading(true);
     try {
@@ -45,148 +65,209 @@ export default function Register() {
       nav("/");
     } catch (err) {
       console.error(err);
-      setError(err?.response?.data?.message || "Registration failed");
+      setErrors({ submit: err?.response?.data?.message || "Registration failed. Please try again." });
     } finally {
       setLoading(false);
     }
   }
 
   return (
-    <div className="kc-auth-page">
-      <div className="kc-auth-card shadow-sm">
-
-        <div className="text-center mb-3">
-          <div className="kc-leaf">🌿</div>
-          <h3 className="fw-bold">Create your account</h3>
-          <p className="text-muted">Join KisanCart today</p>
-        </div>
-
-        {error && <div className="alert alert-danger">{error}</div>}
-
-        <form onSubmit={handleSubmit} className="px-2">
-
-          <div className="mb-3">
-            <label className="form-label kc-label">Full Name</label>
-            <input
-              className="form-control kc-input"
-              required
-              value={form.name}
-              onChange={(e) => update("name", e.target.value)}
-            />
+    <div className="register-page">
+      <div className="register-wrapper">
+        <div className="register-card">
+          {/* Header */}
+          <div className="register-header">
+            <div className="header-icon">🌿</div>
+            <h1 className="header-title">Create Your Account</h1>
+            <p className="header-subtitle">Join KisanCart and start smart farming</p>
           </div>
 
-          <div className="mb-3">
-            <label className="form-label kc-label">Email</label>
-            <input
-              className="form-control kc-input"
-              type="email"
-              required
-              value={form.email}
-              onChange={(e) => update("email", e.target.value)}
-            />
-          </div>
+          {/* Submit Error */}
+          {errors.submit && (
+            <div className="error-alert">
+              <i className="error-icon">⚠️</i>
+              <span>{errors.submit}</span>
+            </div>
+          )}
 
-          <div className="mb-3">
-            <label className="form-label kc-label">Phone</label>
-            <input
-              className="form-control kc-input"
-              required
-              value={form.phone}
-              onChange={(e) => update("phone", e.target.value)}
-            />
-          </div>
-
-          <div className="row">
-            <div className="mb-3 col-md-6">
-              <label className="form-label kc-label">Password</label>
+          {/* Form */}
+          <form onSubmit={handleSubmit} className="register-form">
+            {/* Full Name */}
+            <div className="form-group">
+              <label className="form-label">
+                <span className="label-icon">👤</span>
+                Full Name
+              </label>
               <input
-                className="form-control kc-input"
-                type="password"
-                required
-                value={form.password}
-                onChange={(e) => update("password", e.target.value)}
+                type="text"
+                className={`form-input ${errors.name ? "error" : ""}`}
+                value={form.name}
+                onChange={(e) => update("name", e.target.value)}
+                placeholder="Enter your full name"
               />
+              {errors.name && <span className="error-message">{errors.name}</span>}
             </div>
 
-            <div className="mb-3 col-md-6">
-              <label className="form-label kc-label">Confirm Password</label>
+            {/* Email */}
+            <div className="form-group">
+              <label className="form-label">
+                <span className="label-icon">📧</span>
+                Email Address
+              </label>
               <input
-                className="form-control kc-input"
-                type="password"
-                required
-                value={form.confirmPassword}
-                onChange={(e) => update("confirmPassword", e.target.value)}
+                type="email"
+                className={`form-input ${errors.email ? "error" : ""}`}
+                value={form.email}
+                onChange={(e) => update("email", e.target.value)}
+                placeholder="you@example.com"
               />
+              {errors.email && <span className="error-message">{errors.email}</span>}
             </div>
-          </div>
 
-          <div className="mb-3">
-            <label className="form-label kc-label">Role</label>
-            <select
-              className="form-select kc-input"
-              value={form.role}
-              onChange={(e) => update("role", e.target.value)}
+            {/* Phone Number */}
+            <div className="form-group">
+              <label className="form-label">
+                <span className="label-icon">📞</span>
+                Phone Number
+              </label>
+              <input
+                type="tel"
+                className={`form-input ${errors.phone ? "error" : ""}`}
+                value={form.phone}
+                onChange={(e) => update("phone", e.target.value)}
+                placeholder="9876543210"
+              />
+              {errors.phone && <span className="error-message">{errors.phone}</span>}
+            </div>
+
+            {/* Password & Confirm Password */}
+            <div className="form-row">
+              <div className="form-group">
+                <label className="form-label">
+                  <span className="label-icon">🔒</span>
+                  Password
+                </label>
+                <input
+                  type="password"
+                  className={`form-input ${errors.password ? "error" : ""}`}
+                  value={form.password}
+                  onChange={(e) => update("password", e.target.value)}
+                  placeholder="Create password"
+                />
+                {errors.password && <span className="error-message">{errors.password}</span>}
+              </div>
+
+              <div className="form-group">
+                <label className="form-label">
+                  <span className="label-icon">✓</span>
+                  Confirm Password
+                </label>
+                <input
+                  type="password"
+                  className={`form-input ${errors.confirmPassword ? "error" : ""}`}
+                  value={form.confirmPassword}
+                  onChange={(e) => update("confirmPassword", e.target.value)}
+                  placeholder="Confirm password"
+                />
+                {errors.confirmPassword && <span className="error-message">{errors.confirmPassword}</span>}
+              </div>
+            </div>
+
+            {/* Role */}
+            <div className="form-group">
+              <label className="form-label">
+                <span className="label-icon">🌾</span>
+                I am a
+              </label>
+              <select
+                className="form-select"
+                value={form.role}
+                onChange={(e) => update("role", e.target.value)}
+              >
+                <option value="farmer">👨‍🌾 Farmer - I want to sell my produce</option>
+                <option value="buyer">🛒 Buyer - I want to buy fresh produce</option>
+              </select>
+            </div>
+
+            {/* Address Section - Optional */}
+            <div className="address-toggle">
+              <button
+                type="button"
+                className={`toggle-btn ${showAddress ? "active" : ""}`}
+                onClick={() => setShowAddress(!showAddress)}
+              >
+                <span className="toggle-icon">{showAddress ? "−" : "+"}</span>
+                Add Address (Optional)
+                <span className="toggle-hint">for better delivery experience</span>
+              </button>
+            </div>
+
+            {showAddress && (
+              <div className="address-section">
+                <div className="form-group">
+                  <input
+                    type="text"
+                    className="form-input"
+                    value={form.address.street}
+                    onChange={(e) => update("address.street", e.target.value)}
+                    placeholder="Street Address"
+                  />
+                </div>
+                <div className="form-row">
+                  <div className="form-group">
+                    <input
+                      type="text"
+                      className="form-input"
+                      value={form.address.city}
+                      onChange={(e) => update("address.city", e.target.value)}
+                      placeholder="City"
+                    />
+                  </div>
+                  <div className="form-group">
+                    <input
+                      type="text"
+                      className="form-input"
+                      value={form.address.state}
+                      onChange={(e) => update("address.state", e.target.value)}
+                      placeholder="State"
+                    />
+                  </div>
+                  <div className="form-group">
+                    <input
+                      type="text"
+                      className="form-input"
+                      value={form.address.zipcode}
+                      onChange={(e) => update("address.zipcode", e.target.value)}
+                      placeholder="Zip Code"
+                    />
+                  </div>
+                </div>
+              </div>
+            )}
+
+            {/* Register Button */}
+            <button
+              type="submit"
+              className="register-btn"
+              disabled={loading}
             >
-              <option value="buyer">Buyer</option>
-              <option value="farmer">Farmer</option>
-            </select>
-          </div>
+              {loading ? (
+                <>
+                  <span className="spinner"></span>
+                  Creating Account...
+                </>
+              ) : (
+                "Register"
+              )}
+            </button>
 
-          <fieldset className="border p-3 rounded">
-            <legend className="float-none w-auto px-2 fs-6">Address (Optional)</legend>
-
-            <div className="row">
-              <div className="mb-3 col-md-6">
-                <input
-                  className="form-control kc-input"
-                  placeholder="Street"
-                  value={form.address.street}
-                  onChange={(e) => update("address.street", e.target.value)}
-                />
-              </div>
-
-              <div className="mb-3 col-md-6">
-                <input
-                  className="form-control kc-input"
-                  placeholder="City"
-                  value={form.address.city}
-                  onChange={(e) => update("address.city", e.target.value)}
-                />
-              </div>
-
-              <div className="mb-3 col-md-6">
-                <input
-                  className="form-control kc-input"
-                  placeholder="State"
-                  value={form.address.state}
-                  onChange={(e) => update("address.state", e.target.value)}
-                />
-              </div>
-
-              <div className="mb-3 col-md-6">
-                <input
-                  className="form-control kc-input"
-                  placeholder="Zipcode"
-                  value={form.address.zipcode}
-                  onChange={(e) => update("address.zipcode", e.target.value)}
-                />
-              </div>
+            {/* Login Link */}
+            <div className="login-link">
+              Already have an account?{" "}
+              <Link to="/login">Login here</Link>
             </div>
-          </fieldset>
-
-          <button
-            type="submit"
-            className="btn btn-success w-100 mt-3 py-2 fw-bold"
-            disabled={loading}
-          >
-            {loading ? "Creating account..." : "Register"}
-          </button>
-        </form>
-
-        <p className="text-center mt-3">
-          Already have an account?{" "}
-          <Link to="/login" className="text-success fw-semibold">Sign in</Link>
-        </p>
+          </form>
+        </div>
       </div>
     </div>
   );

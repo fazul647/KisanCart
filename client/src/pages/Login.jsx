@@ -76,7 +76,7 @@ export default function Login() {
               <input className="form-check-input" type="checkbox" id="rememberMe" />
               <label className="form-check-label" htmlFor="rememberMe">Remember me</label>
             </div>
-            <Link to="/forgot" className="text-success">Forgot your password?</Link>
+            <Link to="/forgot-password" className="text-success">Forgot your password?</Link>
           </div>
 
           <button

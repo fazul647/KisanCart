@@ -21,15 +21,17 @@ export default function ProductCard({ p, addToCart, addingToCart }) {
 
         {/* IMAGE */}
         <div className="position-relative" style={{ height: "200px", overflow: "hidden" }}>
-          <img
-            src={p.productImages?.[0] || "/placeholder.png"}
-            className="product-img"
-            alt={p.productName}
-            onError={(e) => {
-              e.target.src =
-                "https://images.unsplash.com/photo-1546069901-ba9599a7e63c";
-            }}
-          />
+        <img
+  src={
+    p.productImages && p.productImages.length > 0
+      ? p.productImages[0]
+      : "https://cdn.pixabay.com/photo/2017/01/20/15/06/oranges-1995056_1280.jpg"
+  }
+  className="product-img"
+  alt={p.productName}
+  loading="lazy"
+/>
+          
 
           <div className="position-absolute top-0 end-0 m-2">
             <span className={`badge bg-${getAvailabilityColor()}`}>
