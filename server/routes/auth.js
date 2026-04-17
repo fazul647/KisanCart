@@ -126,17 +126,19 @@ router.post(
   upload.single("image"),
   async (req, res) => {
     try {
+      console.log("FILE:", req.file);   // 🔥 DEBUG
+
+      if (!req.file) {
+        return res.status(400).json({ message: "No file uploaded" });
+      }
+
       const user = await User.findById(req.user.id);
 
       if (!user) {
         return res.status(404).json({ message: "User not found" });
       }
 
-      // 🔥 CLOUDINARY FIX (IMPORTANT)
-      if (req.file) {
-        user.profilePic = req.file.path;   // ✅ FULL URL (Cloudinary)
-      }
-
+      user.profilePic = req.file.path;
       await user.save();
 
       res.json({
@@ -145,8 +147,8 @@ router.post(
       });
 
     } catch (err) {
-      console.error(err);
-      res.status(500).json({ message: "Upload failed" });
+      console.error("UPLOAD ERROR:", err);  // 🔥 VERY IMPORTANT
+      res.status(500).json({ message: err.message });
     }
   }
 );
