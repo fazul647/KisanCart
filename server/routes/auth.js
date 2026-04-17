@@ -5,6 +5,7 @@ const bcrypt = require("bcryptjs");
 const User = require("../models/User");
 const crypto = require("crypto");
 const nodemailer = require("nodemailer");
+const upload = require("../middlewares/upload");
 
 const { register, login, updateMe } = require('../controllers/authController');
 const authMiddleware = require('../middlewares/authMiddleware');
@@ -25,6 +26,18 @@ const transporter = nodemailer.createTransport({
 // ========================
 router.post('/register', register);
 router.post('/login', login);
+router.post('/login', login);
+
+// ✅ ADD THIS
+router.get("/me", authMiddleware, async (req, res) => {
+  try {
+    const user = await User.findById(req.user.id).select("-password");
+    res.json({ user });
+  } catch (err) {
+    console.error(err);
+    res.status(500).json({ message: "Failed to load user" });
+  }
+});
 router.put('/me', authMiddleware, updateMe);
 
 // ========================
@@ -105,7 +118,7 @@ router.post("/reset-password/:token", async (req, res) => {
     res.status(500).json({ message: "Server error" });
   }
 });
-const upload = require("../middlewares/upload");
+
 
 router.post(
   "/upload-profile",
@@ -115,14 +128,24 @@ router.post(
     try {
       const user = await User.findById(req.user.id);
 
-      user.profilePic = `/uploads/${req.file.filename}`;
+      if (!user) {
+        return res.status(404).json({ message: "User not found" });
+      }
+
+      // 🔥 CLOUDINARY FIX (IMPORTANT)
+      if (req.file) {
+        user.profilePic = req.file.path;   // ✅ FULL URL (Cloudinary)
+      }
+
       await user.save();
 
       res.json({
         message: "Profile updated",
         profilePic: user.profilePic,
       });
+
     } catch (err) {
+      console.error(err);
       res.status(500).json({ message: "Upload failed" });
     }
   }

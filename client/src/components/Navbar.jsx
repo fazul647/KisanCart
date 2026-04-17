@@ -117,7 +117,7 @@ export default function Navbar() {
                   >
                     {user?.profilePic ? (
                       <img
-                        src={`http://localhost:5000${user.profilePic}`}
+                        src={user.profilePic}
                         className="nav-profile-img"
                       />
                     ) : (
@@ -137,7 +137,7 @@ export default function Navbar() {
 
                       {user?.profilePic ? (
                         <img
-                          src={`http://localhost:5000${user.profilePic}`}
+                          src={user.profilePic}
                           className="nav-profile-img-sm"
                         />
                       ) : (

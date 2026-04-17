@@ -110,7 +110,7 @@ export default function FarmerDashboard() {
               className="btn btn-outline-secondary btn-sm"
               title="Refresh dashboard"
             >
-              <i className="bi bi-arrow-clockwise"></i>
+              <i className="bi bi-arrow-clockwise">refresh</i>
             </button>
           </div>
           <p className="text-muted mb-0">

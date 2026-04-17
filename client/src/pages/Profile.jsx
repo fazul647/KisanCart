@@ -9,10 +9,10 @@ export default function Profile() {
   const [error, setError] = useState(null);
 
   const [image, setImage] = useState(null);
+
+  // ✅ FIX: no localhost
   const [preview, setPreview] = useState(
-    stored?.profilePic
-      ? `http://localhost:5000${stored.profilePic}`
-      : null
+    stored?.profilePic || null
   );
 
   const [form, setForm] = useState({
@@ -27,10 +27,14 @@ export default function Profile() {
     },
   });
 
+  // ==========================
+  // 🔹 LOAD USER DATA
+  // ==========================
   useEffect(() => {
     API.get("/auth/me")
       .then(res => {
         const u = res.data.user;
+
         setForm({
           name: u.name || "",
           email: u.email || "",
@@ -43,8 +47,9 @@ export default function Profile() {
           },
         });
 
+        // ✅ FIX: use direct URL
         if (u.profilePic) {
-          setPreview(`http://localhost:5000${u.profilePic}`);
+          setPreview(u.profilePic);
         }
       })
       .catch(() => {});
@@ -59,28 +64,46 @@ export default function Profile() {
     }
   }
 
-  /* 🔥 IMAGE UPLOAD */
+  // ==========================
+  // 🔥 IMAGE UPLOAD
+  // ==========================
   async function handleImageUpload() {
     if (!image) return alert("Select image first");
 
-    const formData = new FormData();
-    formData.append("image", image);
+    try {
+      const formData = new FormData();
+      formData.append("image", image);
 
-    const res = await API.post("/auth/upload-profile", formData, {
-      headers: { "Content-Type": "multipart/form-data" },
-    });
+      const res = await API.post("/auth/upload-profile", formData, {
+        headers: { "Content-Type": "multipart/form-data" },
+      });
 
-    const updatedUser = {
-      ...stored,
-      profilePic: res.data.profilePic,
-    };
+      // ✅ FIX: update latest user
+      const currentUser = JSON.parse(localStorage.getItem("kisan_user"));
 
-    localStorage.setItem("kisan_user", JSON.stringify(updatedUser));
+      const updatedUser = {
+        ...currentUser,
+        profilePic: res.data.profilePic,
+      };
 
-    setPreview(`http://localhost:5000${res.data.profilePic}`);
-    alert("Profile photo updated ✅");
+      localStorage.setItem("kisan_user", JSON.stringify(updatedUser));
+
+      // ✅ FIX: no localhost
+      setPreview(res.data.profilePic);
+
+      alert("Profile photo updated ✅");
+
+      // 🔥 optional: reload navbar instantly
+      window.location.reload();
+
+    } catch (err) {
+      alert("Upload failed ❌");
+    }
   }
 
+  // ==========================
+  // 🔹 SAVE PROFILE
+  // ==========================
   async function saveProfile(e) {
     e.preventDefault();
     setSaveMsg(null);
@@ -99,6 +122,7 @@ export default function Profile() {
       }
 
       setSaveMsg("Profile updated successfully");
+
     } catch (err) {
       setError(err?.response?.data?.message || "Failed to update profile");
     } finally {
@@ -126,7 +150,7 @@ export default function Profile() {
           />
         ) : (
           <div className="avatar-circle">
-            {form.name.charAt(0)}
+            {form.name?.charAt(0).toUpperCase()}
           </div>
         )}
 
@@ -134,8 +158,11 @@ export default function Profile() {
           <input
             type="file"
             onChange={(e) => {
-              setImage(e.target.files[0]);
-              setPreview(URL.createObjectURL(e.target.files[0]));
+              const file = e.target.files[0];
+              if (!file) return;
+
+              setImage(file);
+              setPreview(URL.createObjectURL(file)); // preview before upload
             }}
           />
 

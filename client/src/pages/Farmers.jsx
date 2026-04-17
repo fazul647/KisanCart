@@ -18,16 +18,19 @@ export default function Farmers() {
       const res = await API.get("/farmers");
       setFarmers(res.data.farmers || []);
     } catch (err) {
+      console.error(err);
       setError("Failed to load farmers");
     } finally {
       setLoading(false);
     }
   }
 
+  // 🔹 unique states
   const states = [
     ...new Set(farmers.map(f => f.address?.state).filter(Boolean))
   ];
 
+  // 🔹 filter logic
   const filteredFarmers = farmers.filter(f => {
     const nameMatch = f.name
       .toLowerCase()
@@ -42,7 +45,7 @@ export default function Farmers() {
   return (
     <div className="container py-4">
 
-      {/* HEADER */}
+      {/* 🔥 HEADER */}
       <div className="text-center mb-5">
         <h2 className="fw-bold">🌾 Explore Farmers</h2>
         <p className="text-muted">
@@ -50,9 +53,10 @@ export default function Farmers() {
         </p>
       </div>
 
-      {/* FILTER */}
+      {/* 🔍 FILTER SECTION */}
       <div className="card p-3 shadow-sm mb-4">
         <div className="row g-3">
+          
           <div className="col-md-6">
             <input
               type="text"
@@ -75,10 +79,11 @@ export default function Farmers() {
               ))}
             </select>
           </div>
+
         </div>
       </div>
 
-      {/* LOADING */}
+      {/* ⏳ LOADING */}
       {loading && (
         <div className="text-center">
           <div className="spinner-border text-success"></div>
@@ -86,7 +91,7 @@ export default function Farmers() {
         </div>
       )}
 
-      {/* ERROR */}
+      {/* ❌ ERROR */}
       {error && (
         <p className="text-danger text-center">{error}</p>
       )}
@@ -96,7 +101,7 @@ export default function Farmers() {
         <p className="text-muted text-center">No farmers found</p>
       )}
 
-      {/* FARMERS GRID */}
+      {/* 🌟 FARMERS GRID */}
       <div className="row g-4">
         {filteredFarmers.map(farmer => (
           <div className="col-md-4" key={farmer._id}>
@@ -108,7 +113,7 @@ export default function Farmers() {
                 <div className="mb-3">
                   {farmer.profilePic ? (
                     <img
-                      src={`http://localhost:5000${farmer.profilePic}`}
+                      src={farmer.profilePic}   // ✅ FIXED
                       alt="profile"
                       className="farmer-img"
                     />
@@ -119,21 +124,21 @@ export default function Farmers() {
                   )}
                 </div>
 
-                {/* Name */}
+                {/* NAME */}
                 <h5 className="fw-bold">{farmer.name}</h5>
 
-                {/* Location */}
+                {/* LOCATION */}
                 <p className="text-muted mb-2">
                   📍 {farmer.address?.city || "—"},{" "}
                   {farmer.address?.state || ""}
                 </p>
 
-                {/* Product Count */}
+                {/* PRODUCT COUNT */}
                 <span className="badge bg-success mb-3">
-                  🌱 {farmer.productCount} Products
+                  🌱 {farmer.productCount || 0} Products
                 </span>
 
-                {/* Button */}
+                {/* BUTTON */}
                 <div>
                   <button className="btn btn-outline-success btn-sm">
                     View Profile
@@ -146,6 +151,7 @@ export default function Farmers() {
           </div>
         ))}
       </div>
+
     </div>
   );
 }
