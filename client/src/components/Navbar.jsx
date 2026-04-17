@@ -1,4 +1,4 @@
-import React, { useState, useEffect, useRef } from "react";
+import React, { useState, useEffect } from "react";
 import { NavLink, Link, useNavigate, useLocation } from "react-router-dom";
 import {
   FaShoppingCart,
@@ -18,7 +18,6 @@ export default function Navbar() {
   const location = useLocation();
   const [isMobileMenuOpen, setIsMobileMenuOpen] = useState(false);
   const [cartCount, setCartCount] = useState(0);
-  const navbarRef = useRef(null);
 
   let user = null;
   try {
@@ -81,8 +80,8 @@ export default function Navbar() {
                 </li>
               )}
 
-              {/* 🔥 MY PRODUCTS (BOTH farmer & buyer) */}
-              {user && (
+              {/* 🔥 MY PRODUCTS (ONLY FARMER) */}
+              {user?.role === "farmer" && (
                 <li>
                   <NavLink to="/farmer/products" className="nav-link">
                     <FaShoppingBag /> My Products
@@ -157,9 +156,10 @@ export default function Navbar() {
 
                     {/* DASHBOARD */}
                     <li>
-                      <Link className="dropdown-item" to={
-                        user.role === "farmer" ? "/dashboard" : "/buyer/dashboard"
-                      }>
+                      <Link
+                        className="dropdown-item"
+                        to={user.role === "farmer" ? "/dashboard" : "/buyer/dashboard"}
+                      >
                         Dashboard
                       </Link>
                     </li>
@@ -171,18 +171,21 @@ export default function Navbar() {
                       </Link>
                     </li>
 
-                    {/* 🔥 MY PRODUCTS */}
-                    <li>
-                      <Link className="dropdown-item" to="/farmer/products">
-                        My Products
-                      </Link>
-                    </li>
+                    {/* 🔥 MY PRODUCTS (ONLY FARMER) */}
+                    {user?.role === "farmer" && (
+                      <li>
+                        <Link className="dropdown-item" to="/farmer/products">
+                          My Products
+                        </Link>
+                      </li>
+                    )}
 
                     {/* 🔥 ORDERS */}
                     <li>
-                      <Link className="dropdown-item" to={
-                        user.role === "farmer" ? "/farmer/orders" : "/buyer/orders"
-                      }>
+                      <Link
+                        className="dropdown-item"
+                        to={user.role === "farmer" ? "/farmer/orders" : "/buyer/orders"}
+                      >
                         Orders
                       </Link>
                     </li>
