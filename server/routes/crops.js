@@ -1,36 +1,28 @@
 const express = require("express");
 const router = express.Router();
 
-const {
-  addProduct,
-  getAllProducts,
-  getMyProducts,
-  getProductById,
-  deleteCrop,
-  updateCrop,
-  getRecommendations   // ✅ IMPORT THIS
-} = require("../controllers/cropController");
+const cropController = require("../controllers/cropController");
 
 const authMiddleware = require("../middlewares/authMiddleware");
 const farmerOnly = require("../middlewares/farmerOnly");
 
-// Only logged-in farmers can add product
-router.post("/add", authMiddleware, addProduct);
+// Add product
+router.post("/add", authMiddleware, cropController.addProduct);
 
-// Public: get all products
-router.get("/all", getAllProducts);
+// Get all
+router.get("/all", cropController.getAllProducts);
 
-// ✅ RECOMMENDATIONS (MUST be ABOVE /:id)
-router.get("/recommendations", getRecommendations);
+// ✅ IMPORTANT: keep this above /:id
+router.get("/recommendations", cropController.getRecommendations);
 
-// Logged-in farmer products
-router.get("/mine", authMiddleware, getMyProducts);
+// Farmer products
+router.get("/mine", authMiddleware, cropController.getMyProducts);
 
 // Single product
-router.get("/:id", getProductById);
+router.get("/:id", cropController.getProductById);
 
 // Delete & update
-router.delete("/:id", authMiddleware, farmerOnly, deleteCrop);
-router.put("/:id", authMiddleware, farmerOnly, updateCrop);
+router.delete("/:id", authMiddleware, farmerOnly, cropController.deleteCrop);
+router.put("/:id", authMiddleware, farmerOnly, cropController.updateCrop);
 
 module.exports = router;

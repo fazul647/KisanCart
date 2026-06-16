@@ -1,14 +1,24 @@
-// controllers/productController.js
+const Crop = require("../models/Crop");
 exports.getRecommendations = async (req, res) => {
-    const { cropName, location, price, productId } = req.query;
-  
-    const recommendations = await Product.find({
-      _id: { $ne: productId },          // exclude main product
-      cropName: cropName,               // same crop
-      location: location,               // same location
-      price: { $gte: price - 10, $lte: price + 10 } // similar price
+  try {
+    const { category, excludeId } = req.query;
+
+    let products = await Product.find({
+      category: { $regex: new RegExp(category, "i") },
+      _id: { $ne: excludeId }
     }).limit(6);
-  
-    res.json(recommendations);
-  };
-  
+
+    // fallback if empty
+    if (products.length === 0) {
+      products = await Product.find({
+        _id: { $ne: excludeId }
+      }).limit(6);
+    }
+
+    res.json({ products });
+
+  } catch (err) {
+    console.error(err);
+    res.status(500).json({ message: "Error fetching recommendations" });
+  }
+};

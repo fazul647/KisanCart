@@ -176,22 +176,31 @@ exports.getRecommendations = async (req, res) => {
   try {
     const { category, excludeId } = req.query;
 
-    if (!category) {
-      return res.json({ products: [] });
+    let products = [];
+
+    // 🔥 1. Try same category (case-insensitive)
+    if (category) {
+      products = await Crop.find({
+        category: { $regex: new RegExp(category, "i") },
+        _id: { $ne: excludeId }
+      })
+        .limit(6)
+        .sort({ createdAt: -1 });
     }
 
-    const products = await Crop.find({
-      category: category,
-      _id: { $ne: excludeId },
-      isActive: true
-    })
-      .limit(6)
-      .sort({ createdAt: -1 });
+    // 🔥 2. Fallback if empty → show other products
+    if (products.length === 0) {
+      products = await Crop.find({
+        _id: { $ne: excludeId }
+      })
+        .limit(6)
+        .sort({ createdAt: -1 });
+    }
 
     res.json({ products });
+
   } catch (err) {
     console.error(err);
     res.status(500).json({ message: "Failed to load recommendations" });
   }
 };
-

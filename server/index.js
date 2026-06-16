@@ -2,18 +2,23 @@ require('dotenv').config();
 
 const express = require("express");
 const cors = require("cors");
+const http = require("http");
 const connectDB = require("./config/db");
 const messageRoutes = require("./routes/messages");
 const farmerRoutes = require("./routes/farmers");
 const chatRoute = require("./routes/chat");
 const auth = require("./middlewares/authMiddleware");
+const { initSocket } = require("./socket");
 
 const path = require("path");
 
 
 
 const app = express();
+const server = http.createServer(app);
 const port = 5000;
+
+initSocket(server);
 
 // connect to MongoDB
 connectDB();
@@ -53,6 +58,6 @@ app.use("/api/admin", require("./routes/admin"));
 
 app.use("/uploads", express.static(path.join(__dirname, "uploads")));
 // start server
-app.listen(port, () => {
+server.listen(port, () => {
   console.log("Server is listening on port 5000");
 });

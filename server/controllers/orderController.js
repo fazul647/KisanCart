@@ -1,4 +1,4 @@
-const { sendEmail } = require("../utils/sendEmail");
+const sendEmail = require("../utils/sendEmail");
 const emailTemplate = require("../utils/emailTemplate");
 const Order = require("../models/Order");
 const Crop = require("../models/Crop");
