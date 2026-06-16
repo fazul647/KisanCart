@@ -1,185 +1,162 @@
-# KisanCart
-# 🌾 KisanCart – Farmer Marketplace Platform
+🌾 KisanCart – Farmer Marketplace Platform
+🚀 Live Demo
 
-## 🚀 Overview
+🌐 Website: https://kisan-cart.vercel.app/
 
-KisanCart is a full-stack web application that connects farmers directly with buyers.
-It eliminates middlemen by allowing farmers to list their crops and buyers to purchase fresh produce directly.
+🚀 Overview
 
-The platform also includes AI assistance, messaging, and order tracking to enhance user experience.
+KisanCart is a full-stack MERN application that connects farmers directly with buyers, eliminating middlemen and enabling seamless agricultural commerce.
 
----
+The platform allows farmers to manage products and orders while buyers can browse products, place orders, communicate with farmers, and track purchases in real time.
 
-## ✨ Features
-
-### 👤 Authentication
-
-* User Registration & Login (Farmer / Buyer roles)
-* JWT-based Authentication
-* Secure Password Handling
-
-### 🧑‍🌾 Farmer Features
-
-* Add & manage crops
-* View **My Products**
-* Track orders (pending, shipped, delivered)
-* Chat with buyers
-* Upload profile image
-
-### 🛒 Buyer Features
-
-* Browse products
-* Search & filter farmers
-* Add to cart & place orders
-* View order history
-* Chat with farmers
-
-### 🤖 AI Assistant
-
-* Smart chatbot for agriculture queries
-* Helps farmers with crop suggestions and fertilizers
-
-### 💬 Messaging System
-
-* Real-time communication between farmer and buyer
-
-### 📊 Dashboard
-
-* Separate dashboards for farmer & buyer
-* Order statistics overview
-
-### 🔐 Password Reset
-
-* Email-based password reset system (Nodemailer)
-
----
-
-## 🛠️ Tech Stack
-
-### Frontend
-
-* React.js (Vite)
-* Bootstrap 5
-* Axios
-
-### Backend
-
-* Node.js
-* Express.js
-* MongoDB Atlas
-* Mongoose
-
-### Other Tools
-
-* JWT Authentication
-* Multer (image upload)
-* Nodemailer (email service)
-
----
-
-## 📁 Project Structure
-
-```
+✨ Features
+👤 Authentication & Security
+User Registration & Login
+JWT-based Authentication
+Role-Based Access (Farmer / Buyer)
+Secure Password Hashing
+Password Reset via Email
+🧑‍🌾 Farmer Features
+Add Products
+Edit Products
+Delete Products
+Manage Product Listings
+Upload Profile Image
+View Buyer Orders
+Update Order Status
+Chat with Buyers
+🛒 Buyer Features
+Browse Products
+Search & Filter Products
+Add Products to Cart
+Place Orders
+View Order History
+Track Orders
+Chat with Farmers
+💬 Real-Time Messaging
+Buyer ↔ Farmer Communication
+Dedicated Chat Interface
+Instant Messaging Experience
+📊 Dashboards
+Farmer Dashboard
+Buyer Dashboard
+Order Tracking
+Statistics Overview
+🤖 AI Assistant
+Agriculture Guidance
+Crop Suggestions
+Fertilizer Recommendations
+📧 Email Services
+Password Reset Emails
+Order Status Notifications
+🛠️ Tech Stack
+Frontend
+React.js (Vite)
+Bootstrap 5
+Axios
+Backend
+Node.js
+Express.js
+MongoDB Atlas
+Mongoose
+Additional Tools
+JWT Authentication
+Multer
+Nodemailer
+📁 Project Structure
 KisanCart/
-├── client/        # React frontend
-├── server/        # Node backend
-├── uploads/       # Profile images (local)
-```
+├── client/
+├── server/
+├── screenshots/
+├── README.md
+📸 Screenshots
+🏠 Home Page
 
----
 
-## ⚙️ Installation & Setup
 
-### 1️⃣ Clone the repository
 
-```bash
+🛍️ Products Page
+
+
+
+
+🛒 Cart Page
+
+
+
+
+💬 Chat Interface
+
+
+
+
+🌾 Farmer Dashboard
+
+
+
+
+👤 Buyer Dashboard
+
+
+
+
+⚙️ Installation & Setup
+Clone Repository
 git clone https://github.com/fazul647/KisanCart.git
 cd KisanCart
-```
-
-### 2️⃣ Setup Backend
-
-```bash
+Backend Setup
 cd server
 npm install
-```
 
-Create `.env` file:
+Create .env
 
-```
 MONGO_URI=your_mongodb_url
 JWT_SECRET=your_secret
 EMAIL_USER=your_email
 EMAIL_PASS=your_app_password
-```
 
-Run server:
+Run Backend
 
-```bash
 npm start
-```
-
----
-
-### 3️⃣ Setup Frontend
-
-```bash
+Frontend Setup
 cd client
 npm install
-```
 
-Create `.env`:
+Create .env
 
-```
 VITE_API_URL=http://localhost:5000
-```
 
-Run frontend:
+Run Frontend
 
-```bash
 npm run dev
-```
+🌐 Deployment
+Frontend
+Vercel
+Backend
+Render
+🚀 Future Improvements
+Cloudinary Integration
+Online Payments
+Ratings & Reviews
+Mobile Application
+👨‍💻 Author
 
----
+Shaik Fazul Ahammad
 
-## 🌐 Deployment
+📧 fazulahammads@gmail.com
 
-* Frontend: Vercel
-* Backend: (Recommended: Render / Railway)
+GitHub: https://github.com/fazul647
 
----
+⭐ Conclusion
 
-## 📸 Screenshots
+KisanCart is a real-world MERN Stack application demonstrating:
 
-👉 Add your project screenshots here:
+Authentication & Authorization
+Product Management
+Shopping Cart & Orders
+Real-Time Messaging
+Email Integration
+Responsive UI Design
+Full CRUD Operations
 
-* Home Page
-* Dashboard
-* Farmers Page
-* Profile Page
-
----
-
-## 🚧 Future Improvements
-
-* Cloudinary integration for image upload
-* Payment gateway integration
-* Ratings & reviews system
-* Real-time notifications
-
----
-
-## 👨‍💻 Author
-
-**Shaik Fazul Ahammad**
-📧 [fazulahammads@gmail.com](mailto:fazulahammads@gmail.com)
-
----
-
-## ⭐ Conclusion
-
-KisanCart is a scalable MERN stack project demonstrating real-world features like authentication, role-based access, AI integration, and full CRUD operations.
-
----
-
-⭐ If you like this project, give it a star!
+⭐ If you found this project useful, please consider giving it a star on GitHub.
