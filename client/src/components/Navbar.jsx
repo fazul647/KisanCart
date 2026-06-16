@@ -125,18 +125,7 @@ export default function Navbar() {
               )}
 
               {/* FARMERS */}
-              {user?.role !== "admin" && (
-                <li className="nav-item">
-                  <NavLink 
-                    to="/farmers" 
-                    className={({ isActive }) => `nav-link ${isActive ? 'active' : ''}`}
-                    onClick={handleMobileLinkClick}
-                  >
-                    <FaUsers className="nav-icon" />
-                    <span>Farmers</span>
-                  </NavLink>
-                </li>
-              )}
+              
 
               {/* MY PRODUCTS (ONLY FARMER) */}
               {user?.role === "farmer" && (

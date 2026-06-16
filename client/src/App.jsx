@@ -17,10 +17,7 @@ import BuyerDashboard from "./pages/BuyerDashboard";
 import Farmers from "./pages/Farmers";
 import EditProduct from "./pages/EditProduct";
 import About from "./pages/About";
-import AdminDashboard from "./pages/AdminDashboard";
-import AdminProducts from "./pages/AdminProducts";
-import AdminUsers from "./pages/AdminUsers";
-import AdminOrders from "./pages/AdminOrders";
+
 import Chatbot from "./pages/Chatbot";
 import ForgotPassword from "./pages/ForgetPassword";
 import ResetPassword from "./pages/ResetPassword";
@@ -59,10 +56,7 @@ export default function App() {
         <Route path="/farmers" element={<Farmers />} />
         <Route path="/farmer/products/edit/:id" element={<EditProduct />} />
         <Route path="about" element={<About/>} />
-        <Route path="/admin" element={<AdminDashboard />} />
-        <Route path="/admin/products" element={<AdminProducts />} />
-        <Route path="/admin/users" element={<AdminUsers />} />
-        <Route path="/admin/orders" element={<AdminOrders />} />
+        
         <Route path="/chatbot" element={<Chatbot />} />
         <Route path="/forgot-password" element={<ForgotPassword />} />
         <Route path="/reset-password/:token" element={<ResetPassword />} />
