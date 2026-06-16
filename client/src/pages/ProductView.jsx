@@ -2,6 +2,7 @@ import React, { useEffect, useState } from "react";
 import { useParams, useNavigate } from "react-router-dom";
 import API from "../api/axios";
 import ProductCard from "../components/ProductCard";
+import "../styles/ProductView.css";
 
 export default function ProductView() {
   const { id } = useParams();
@@ -10,15 +11,16 @@ export default function ProductView() {
   const [product, setProduct] = useState(null);
   const [recommended, setRecommended] = useState([]);
   const [loading, setLoading] = useState(true);
-
-  // message modal
   const [showMsg, setShowMsg] = useState(false);
   const [msgText, setMsgText] = useState("");
+  const [addingToCart, setAddingToCart] = useState(false);
+  const [sendingMessage, setSendingMessage] = useState(false);
+  const [selectedImage, setSelectedImage] = useState(0);
 
   const user = JSON.parse(localStorage.getItem("kisan_user"));
 
-  /* ---------------- ADD TO CART ---------------- */
   function addToCart(p) {
+    setAddingToCart(true);
     const cart = JSON.parse(localStorage.getItem("kisan_cart")) || [];
     const existing = cart.find(item => item.productId === p._id);
 
@@ -36,16 +38,22 @@ export default function ProductView() {
     }
 
     localStorage.setItem("kisan_cart", JSON.stringify(cart));
-    alert("Added to cart");
+    
+    setTimeout(() => {
+      setAddingToCart(false);
+      window.dispatchEvent(
+        new CustomEvent("showToast", {
+          detail: { message: `${p.productName} added to cart`, type: "success" }
+        })
+      );
+      nav("/cart");
+    }, 500);
   }
 
-  /* ---------------- SEND MESSAGE ---------------- */
   async function sendMessage() {
-    if (!msgText.trim()) {
-      alert("Type a message");
-      return;
-    }
-
+    if (!msgText.trim()) return;
+    
+    setSendingMessage(true);
     try {
       await API.post("/messages/send", {
         receiverId: product.farmer._id,
@@ -53,15 +61,24 @@ export default function ProductView() {
         text: msgText,
       });
 
-      alert("Message sent");
       setMsgText("");
       setShowMsg(false);
+      window.dispatchEvent(
+        new CustomEvent("showToast", {
+          detail: { message: "Message sent successfully", type: "success" }
+        })
+      );
     } catch (err) {
-      alert("Failed to send message");
+      window.dispatchEvent(
+        new CustomEvent("showToast", {
+          detail: { message: "Failed to send message", type: "error" }
+        })
+      );
+    } finally {
+      setSendingMessage(false);
     }
   }
 
-  /* ---------------- LOAD RECOMMENDATIONS ---------------- */
   async function loadRecommendations(prod) {
     try {
       const res = await API.get("/crops/recommendations", {
@@ -70,22 +87,20 @@ export default function ProductView() {
           excludeId: prod._id
         }
       });
-
-      console.log("RECOMMENDED PRODUCTS:", res.data.products);
       setRecommended(res.data.products || []);
     } catch (err) {
       console.error("Failed to load recommendations", err);
     }
   }
 
-  /* ---------------- LOAD PRODUCT ---------------- */
   async function load() {
     try {
       const res = await API.get(`/crops/${id}`);
       const prod = res.data.product;
-
       setProduct(prod);
-      loadRecommendations(prod);
+      if (user?.role === "buyer") {
+        loadRecommendations(prod);
+      }
     } catch (err) {
       console.error("Failed to load product:", err);
       nav("/products");
@@ -96,150 +111,167 @@ export default function ProductView() {
 
   useEffect(() => {
     load();
-    // eslint-disable-next-line
   }, [id]);
 
   if (loading) {
-    return <h3 className="text-center mt-4">Loading...</h3>;
+    return (
+      <div className="productview-loading">
+        <div className="loading-spinner"></div>
+        <p>Loading product details...</p>
+      </div>
+    );
   }
 
   if (!product) return null;
 
-  const mainImg =
-    product.productImages?.[0] ||
-    "https://images.unsplash.com/photo-1546069901-ba9599a7e63c";
+  const images = product.productImages?.length ? product.productImages : [];
+  const mainImage = images[selectedImage] || "https://images.unsplash.com/photo-1546069901-ba9599a7e63c";
 
   return (
-    <div className="container mt-4">
+    <div className="productview-page">
+      <div className="productview-container">
+        {/* Back Button */}
+        <button className="back-button" onClick={() => nav(-1)}>
+          ← Back to Products
+        </button>
 
-      {/* MAIN PRODUCT */}
-      <div className="row g-4">
-        <div className="col-md-6">
-          <div className="card">
-            <img
-              src={mainImg}
-              alt={product.productName}
-              className="card-img-top"
-              style={{ height: "520px", objectFit: "cover" }}
-            />
+        {/* Main Product Section */}
+        <div className="productview-main">
+          {/* Image Gallery */}
+          <div className="productview-gallery">
+            <div className="main-image">
+              <img src={mainImage} alt={product.productName} />
+            </div>
+            {images.length > 1 && (
+              <div className="thumbnail-list">
+                {images.map((img, idx) => (
+                  <button
+                    key={idx}
+                    className={`thumbnail ${selectedImage === idx ? 'active' : ''}`}
+                    onClick={() => setSelectedImage(idx)}
+                  >
+                    <img src={img} alt={`Thumbnail ${idx + 1}`} />
+                  </button>
+                ))}
+              </div>
+            )}
           </div>
-        </div>
 
-        <div className="col-md-6">
-          <h2 className="fw-bold">{product.productName}</h2>
-          <p className="text-muted">{product.category}</p>
+          {/* Product Info */}
+          <div className="productview-info">
+            <div className="product-category">{product.category}</div>
+            <h1 className="product-title">{product.productName}</h1>
+            
+            <div className="product-price-section">
+              <span className="product-price">₹{product.price}</span>
+              {product.unit && <span className="product-unit">/ {product.unit}</span>}
+            </div>
 
-          <h4 className="text-success">
-            ₹{product.price} / {product.unit}
-          </h4>
+            <div className="product-stock">
+              <span className={`stock-badge ${product.quantityAvailable > 10 ? 'in-stock' : product.quantityAvailable > 0 ? 'low-stock' : 'out-stock'}`}>
+                {product.quantityAvailable > 10 ? 'In Stock' : 
+                 product.quantityAvailable > 0 ? `Only ${product.quantityAvailable} left` : 'Out of Stock'}
+              </span>
+            </div>
 
-          <p className="mt-3">
-            {product.description || "No description provided."}
-          </p>
+            {product.description && (
+              <div className="product-description">
+                <h3>Description</h3>
+                <p>{product.description}</p>
+              </div>
+            )}
 
-          <p><strong>Available:</strong> {product.quantityAvailable}</p>
+            {/* Farmer Info */}
+            {user?.role === "buyer" && product.farmer && (
+              <div className="farmer-card">
+                <h3>Seller Information</h3>
+                <div className="farmer-details">
+                  <div className="farmer-icon">👨‍🌾</div>
+                  <div className="farmer-info">
+                    <p className="farmer-name">{product.farmer.name}</p>
+                    <p className="farmer-contact">📞 {product.farmer.phone}</p>
+                    <p className="farmer-contact">✉️ {product.farmer.email}</p>
+                  </div>
+                </div>
+              </div>
+            )}
 
-          {/* FARMER INFO */}
-          {user?.role === "buyer" && (
-            <>
-              <hr />
-              <h5>Farmer</h5>
-              <p className="mb-1"><strong>{product.farmer?.name}</strong></p>
-              <p className="mb-1">📞 {product.farmer?.phone}</p>
-              <p className="mb-1">✉️ {product.farmer?.email}</p>
-            </>
-          )}
-
-          {/* ACTION BUTTONS */}
-          <div className="d-flex gap-2 flex-wrap mt-3">
+            {/* Action Buttons */}
             {user?.role === "buyer" && (
-              <>
-                <button
-                  className="btn btn-outline-success"
+              <div className="action-buttons">
+                <button 
+                  className="btn-message"
                   onClick={() => setShowMsg(true)}
                 >
                   💬 Message Farmer
                 </button>
-
-                <button
-                  className="btn btn-success"
+                <button 
+                  className="btn-cart"
                   onClick={() => addToCart(product)}
+                  disabled={addingToCart || product.quantityAvailable === 0}
                 >
-                  Add to Cart
+                  {addingToCart ? 'Adding...' : '🛒 Add to Cart'}
                 </button>
-              </>
+              </div>
             )}
-
-            <button
-              className="btn btn-outline-secondary"
-              onClick={() => nav(-1)}
-            >
-              Back to Products
-            </button>
           </div>
         </div>
+
+        {/* Recommended Products */}
+{user?.role === "buyer" && (
+  <div className="recommended-section">
+    <div className="section-header">
+      <h2>You May Also Like</h2>
+      <p>Products you might be interested in</p>
+    </div>
+
+    {recommended.length === 0 ? (
+      <p style={{ padding: "20px", textAlign: "center" }}>
+        No recommendations available
+      </p>
+    ) : (
+      <div className="recommended-grid">
+        {recommended.map(p => (
+          <ProductCard key={p._id} p={p} />
+        ))}
       </div>
+    )}
+  </div>
+)}  </div>
 
-      {/* MESSAGE MODAL */}
+      {/* Message Modal */}
       {showMsg && (
-        <div
-          className="modal fade show d-block"
-          style={{ background: "rgba(0,0,0,0.5)" }}
-        >
-          <div className="modal-dialog">
-            <div className="modal-content">
-              <div className="modal-header">
-                <h5 className="modal-title">
-                  Message {product.farmer?.name}
-                </h5>
-                <button
-                  className="btn-close"
-                  onClick={() => setShowMsg(false)}
-                />
-              </div>
-
-              <div className="modal-body">
-                <textarea
-                  className="form-control"
-                  rows={4}
-                  placeholder="Type your message..."
-                  value={msgText}
-                  onChange={e => setMsgText(e.target.value)}
-                />
-              </div>
-
-              <div className="modal-footer">
-                <button
-                  className="btn btn-secondary"
-                  onClick={() => setShowMsg(false)}
-                >
-                  Cancel
-                </button>
-                <button
-                  className="btn btn-success"
-                  onClick={sendMessage}
-                >
-                  Send
-                </button>
-              </div>
+        <div className="modal-overlay" onClick={() => setShowMsg(false)}>
+          <div className="modal-container" onClick={(e) => e.stopPropagation()}>
+            <div className="modal-header">
+              <h3>Message {product.farmer?.name}</h3>
+              <button className="modal-close" onClick={() => setShowMsg(false)}>×</button>
+            </div>
+            <div className="modal-body">
+              <textarea
+                className="message-input"
+                rows={5}
+                placeholder="Type your message here..."
+                value={msgText}
+                onChange={e => setMsgText(e.target.value)}
+                autoFocus
+              />
+            </div>
+            <div className="modal-footer">
+              <button className="btn-cancel" onClick={() => setShowMsg(false)}>
+                Cancel
+              </button>
+              <button 
+                className="btn-send" 
+                onClick={sendMessage}
+                disabled={sendingMessage || !msgText.trim()}
+              >
+                {sendingMessage ? 'Sending...' : 'Send Message'}
+              </button>
             </div>
           </div>
         </div>
       )}
-
-      {/* RECOMMENDED PRODUCTS (SAME CARD AS PRODUCTS PAGE) */}
-      {user?.role === "buyer" && recommended.length > 0 && (
-        <div className="mt-5">
-          <h4 className="fw-bold mb-3">Recommended Products</h4>
-
-          <div className="row row-cols-1 row-cols-md-2 row-cols-lg-3 row-cols-xl-4 g-4">
-            {recommended.map(p => (
-              <ProductCard key={p._id} p={p} />
-            ))}
-          </div>
-        </div>
-      )}
-
     </div>
   );
 }

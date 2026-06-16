@@ -1,20 +1,51 @@
 import React, { useEffect, useState } from "react";
 import API from "../api/axios";
 import { Link } from "react-router-dom";
-import { FaEye, FaTrash, FaClock, FaBoxOpen, FaEdit, FaTag, FaWeight, FaRupeeSign } from 'react-icons/fa';
+import {
+  FaTrash,
+  FaBoxOpen,
+  FaEdit,
+  FaTag,
+  FaSearch,
+  FaPlus,
+  FaLeaf,
+  FaChevronLeft,
+  FaChevronRight,
+  FaTh,
+  FaThList,
+  FaCheckCircle,
+  FaClock,
+  FaSeedling,
+} from "react-icons/fa";
+import { MdAgriculture } from "react-icons/md";
 
 export default function FarmerProducts() {
   const [products, setProducts] = useState([]);
   const [loading, setLoading] = useState(true);
+  const [searchTerm, setSearchTerm] = useState("");
+  const [selectedCategory, setSelectedCategory] = useState("");
+  const [viewMode, setViewMode] = useState("grid");
+  const [currentPage, setCurrentPage] = useState(1);
+  const itemsPerPage = 12;
 
   useEffect(() => {
-    API.get("/crops/mine")
-      .then(res => {
-        setProducts(res.data.products || []);
-      })
-      .catch(() => alert("Failed to load products"))
-      .finally(() => setLoading(false));
+    loadProducts();
   }, []);
+
+  async function loadProducts() {
+    try {
+      setLoading(true);
+      const res = await API.get("/crops/mine");
+      // Filter only active products
+      const activeProducts = (res.data.products || []).filter(p => p.isActive === true);
+      setProducts(activeProducts);
+    } catch (err) {
+      console.error(err);
+      alert("Failed to load products");
+    } finally {
+      setLoading(false);
+    }
+  }
 
   async function deleteProduct(id) {
     const ok = window.confirm("Are you sure you want to delete this product?");
@@ -22,262 +53,404 @@ export default function FarmerProducts() {
 
     try {
       await API.delete(`/crops/${id}`);
-      setProducts(prev => prev.filter(p => p._id !== id));
-      alert("Product deleted successfully");
+      setProducts((prev) => prev.filter((p) => p._id !== id));
+      window.dispatchEvent(
+        new CustomEvent("showToast", {
+          detail: { message: "Product deleted successfully", type: "success" }
+        })
+      );
     } catch (err) {
       console.error(err);
       alert(err?.response?.data?.message || "Delete failed");
     }
   }
 
+  const categories = [...new Set(products.map((p) => p.category).filter(Boolean))];
+
+  const filteredProducts = products.filter((p) => {
+    const matchesSearch =
+      p.productName?.toLowerCase().includes(searchTerm.toLowerCase()) ||
+      p.category?.toLowerCase().includes(searchTerm.toLowerCase()) ||
+      p.description?.toLowerCase().includes(searchTerm.toLowerCase());
+    const matchesCategory = !selectedCategory || p.category === selectedCategory;
+    return matchesSearch && matchesCategory;
+  });
+
+  const totalPages = Math.ceil(filteredProducts.length / itemsPerPage);
+  const paginatedProducts = filteredProducts.slice(
+    (currentPage - 1) * itemsPerPage,
+    currentPage * itemsPerPage
+  );
+
   if (loading) {
     return (
-      <div className="container py-5">
-        <div className="text-center py-5">
-          <div className="spinner-border text-success" role="status">
+      <div style={{ minHeight: "100vh", background: "#f8f9fa", display: "flex", alignItems: "center", justifyContent: "center" }}>
+        <div className="text-center">
+          <div className="spinner-border text-success mb-3" style={{ width: "48px", height: "48px" }}>
             <span className="visually-hidden">Loading...</span>
           </div>
-          <p className="mt-3 text-muted">Loading your products...</p>
+          <p className="text-muted">Loading your products...</p>
         </div>
       </div>
     );
   }
 
   return (
-    <div className="container-fluid py-4">
-      <div className="container">
-        {/* Header Section */}
-        <div className="d-flex flex-column flex-md-row justify-content-between align-items-start align-items-md-center mb-5">
-          <div>
-            <h2 className="fw-bold display-6 mb-2">My Products</h2>
-            <p className="text-muted mb-0">
-              Manage your listed farm products and monitor their performance
-            </p>
-          </div>
-          <div className="mt-3 mt-md-0">
-            <Link to="/add-product" className="btn btn-success btn-lg px-4 rounded-pill">
-              <FaEdit className="me-2" />
-              Add New Product
+    <div style={{ background: "#f8f9fa", minHeight: "100vh" }}>
+      {/* Header */}
+      <div style={{
+        background: "linear-gradient(135deg, #2e7d32 0%, #1b5e20 100%)",
+        padding: "32px 32px 48px",
+        position: "relative",
+      }}>
+        <div className="container-fluid">
+          <div className="d-flex justify-content-between align-items-center">
+            <div>
+              <div className="d-flex align-items-center gap-3">
+                <div style={{
+                  background: "rgba(255,255,255,0.2)",
+                  width: "50px",
+                  height: "50px",
+                  borderRadius: "12px",
+                  display: "flex",
+                  alignItems: "center",
+                  justifyContent: "center",
+                }}>
+                  <MdAgriculture style={{ color: "white", fontSize: "28px" }} />
+                </div>
+                <div>
+                  <h4 className="fw-bold mb-0" style={{ color: "white" }}>My Products</h4>
+                  <p className="mb-0" style={{ color: "rgba(255,255,255,0.8)", fontSize: "13px" }}>
+                    Manage your active crop listings
+                  </p>
+                </div>
+              </div>
+            </div>
+            <Link
+              to="/add-product"
+              style={{
+                background: "white",
+                color: "#2e7d32",
+                padding: "10px 24px",
+                borderRadius: "10px",
+                textDecoration: "none",
+                fontWeight: 600,
+                display: "flex",
+                alignItems: "center",
+                gap: "8px",
+                fontSize: "14px",
+              }}
+            >
+              <FaPlus /> Add New Product
             </Link>
           </div>
         </div>
+      </div>
 
+      {/* Main Content */}
+      <div className="container-fluid" style={{ marginTop: "-24px", padding: "0 32px 48px" }}>
+        
         {/* Stats Cards */}
-        <div className="row mb-5">
-          <div className="col-md-3 col-6 mb-3">
-            <div className="card border-0 bg-success bg-opacity-10 rounded-4 h-100">
-              <div className="card-body p-4">
-                <div className="d-flex align-items-center">
-                  <div className="bg-success rounded-circle p-3 me-3">
-                    <FaBoxOpen className="text-white fs-4" />
-                  </div>
-                  <div>
-                    <h3 className="fw-bold mb-0">{products.length}</h3>
-                    <p className="text-muted mb-0">Total Products</p>
-                  </div>
+        <div className="row g-4 mb-4">
+          <div className="col-md-4">
+            <div style={{
+              background: "white",
+              borderRadius: "16px",
+              padding: "20px",
+              boxShadow: "0 1px 3px rgba(0,0,0,0.08)",
+            }}>
+              <div className="d-flex justify-content-between align-items-center">
+                <div>
+                  <p style={{ color: "#6b7280", fontSize: "13px", marginBottom: "4px" }}>Total Products</p>
+                  <h3 className="fw-bold mb-0" style={{ color: "#1f2937" }}>{products.length}</h3>
+                </div>
+                <div style={{ background: "#e8f5e9", padding: "10px", borderRadius: "12px" }}>
+                  <FaBoxOpen style={{ color: "#2e7d32", fontSize: "22px" }} />
                 </div>
               </div>
             </div>
           </div>
-          <div className="col-md-3 col-6 mb-3">
-            <div className="card border-0 bg-warning bg-opacity-10 rounded-4 h-100">
-              <div className="card-body p-4">
-                <div className="d-flex align-items-center">
-                  <div className="bg-warning rounded-circle p-3 me-3">
-                    <FaClock className="text-white fs-4" />
-                  </div>
-                  <div>
-                    <h3 className="fw-bold mb-0">
-                      {products.filter(p => p.isActive).length}
-                    </h3>
-                    <p className="text-muted mb-0">Active Products</p>
-                  </div>
+          <div className="col-md-4">
+            <div style={{
+              background: "white",
+              borderRadius: "16px",
+              padding: "20px",
+              boxShadow: "0 1px 3px rgba(0,0,0,0.08)",
+            }}>
+              <div className="d-flex justify-content-between align-items-center">
+                <div>
+                  <p style={{ color: "#6b7280", fontSize: "13px", marginBottom: "4px" }}>Active Products</p>
+                  <h3 className="fw-bold mb-0" style={{ color: "#1f2937" }}>{products.filter(p => p.isActive).length}</h3>
+                </div>
+                <div style={{ background: "#e8f5e9", padding: "10px", borderRadius: "12px" }}>
+                  <FaLeaf style={{ color: "#2e7d32", fontSize: "22px" }} />
                 </div>
               </div>
             </div>
           </div>
-          <div className="col-md-3 col-6 mb-3">
-            <div className="card border-0 bg-danger bg-opacity-10 rounded-4 h-100">
-              <div className="card-body p-4">
-                <div className="d-flex align-items-center">
-                  <div className="bg-danger rounded-circle p-3 me-3">
-                    <FaClock className="text-white fs-4" />
-                  </div>
-                  <div>
-                    <h3 className="fw-bold mb-0">
-                      {products.filter(p => !p.isActive).length}
-                    </h3>
-                    <p className="text-muted mb-0">Expired Products</p>
-                  </div>
+          <div className="col-md-4">
+            <div style={{
+              background: "white",
+              borderRadius: "16px",
+              padding: "20px",
+              boxShadow: "0 1px 3px rgba(0,0,0,0.08)",
+            }}>
+              <div className="d-flex justify-content-between align-items-center">
+                <div>
+                  <p style={{ color: "#6b7280", fontSize: "13px", marginBottom: "4px" }}>Categories</p>
+                  <h3 className="fw-bold mb-0" style={{ color: "#1f2937" }}>{categories.length}</h3>
+                </div>
+                <div style={{ background: "#e0e7ff", padding: "10px", borderRadius: "12px" }}>
+                  <FaTag style={{ color: "#4f46e5", fontSize: "22px" }} />
                 </div>
               </div>
             </div>
           </div>
         </div>
 
-        {/* Empty State */}
-        {products.length === 0 && (
-          <div className="card border-0 shadow-lg rounded-4 overflow-hidden">
-            <div className="card-body p-5 text-center">
-              <div className="bg-light rounded-circle p-4 d-inline-flex align-items-center justify-content-center mb-4">
-                <FaBoxOpen className="text-muted fs-1" />
+        {/* Search and Filters */}
+        <div style={{
+          background: "white",
+          borderRadius: "16px",
+          padding: "20px",
+          marginBottom: "24px",
+          boxShadow: "0 1px 3px rgba(0,0,0,0.08)",
+        }}>
+          <div className="row g-3 align-items-center">
+            <div className="col-md-5">
+              <div className="position-relative">
+                <FaSearch style={{ position: "absolute", left: "12px", top: "50%", transform: "translateY(-50%)", color: "#9ca3af" }} />
+                <input
+                  type="text"
+                  placeholder="Search products..."
+                  className="form-control"
+                  style={{ paddingLeft: "38px", borderRadius: "10px", borderColor: "#e5e7eb" }}
+                  value={searchTerm}
+                  onChange={(e) => setSearchTerm(e.target.value)}
+                />
               </div>
-              <h4 className="fw-bold mb-3">No Products Yet</h4>
-              <p className="text-muted mb-4">
-                You haven't listed any products yet. Start by adding your first product 
-                to connect with buyers.
-              </p>
-              <Link to="/add-product" className="btn btn-success btn-lg px-5 rounded-pill">
-                Add Your First Product
-              </Link>
+            </div>
+            <div className="col-md-4">
+              <select
+                className="form-select"
+                style={{ borderRadius: "10px", borderColor: "#e5e7eb" }}
+                value={selectedCategory}
+                onChange={(e) => setSelectedCategory(e.target.value)}
+              >
+                <option value="">All Categories</option>
+                {categories.map((cat) => (
+                  <option key={cat} value={cat}>{cat}</option>
+                ))}
+              </select>
+            </div>
+            <div className="col-md-3">
+              <div className="d-flex gap-2">
+                <button
+                  className={`btn ${viewMode === "grid" ? "btn-success" : "btn-outline-secondary"}`}
+                  onClick={() => setViewMode("grid")}
+                  style={{ borderRadius: "10px", flex: 1 }}
+                >
+                  <FaTh /> Grid
+                </button>
+                <button
+                  className={`btn ${viewMode === "list" ? "btn-success" : "btn-outline-secondary"}`}
+                  onClick={() => setViewMode("list")}
+                  style={{ borderRadius: "10px", flex: 1 }}
+                >
+                  <FaThList /> List
+                </button>
+              </div>
+            </div>
+          </div>
+        </div>
+
+        {/* Results Count */}
+        <div className="mb-3">
+          <p style={{ color: "#6b7280", fontSize: "13px" }}>
+            Showing {paginatedProducts.length} of {filteredProducts.length} active products
+          </p>
+        </div>
+
+        {/* Products Display */}
+        {filteredProducts.length === 0 ? (
+          <div style={{
+            background: "white",
+            borderRadius: "20px",
+            padding: "80px 40px",
+            textAlign: "center",
+            boxShadow: "0 1px 3px rgba(0,0,0,0.08)",
+          }}>
+            <FaSeedling size={64} color="#d1d5db" />
+            <h5 className="fw-bold mt-3 mb-2" style={{ color: "#374151" }}>No active products found</h5>
+            <p style={{ color: "#6b7280" }}>Get started by adding your first product</p>
+            <Link to="/add-product" className="btn btn-success mt-3 px-4">
+              <FaPlus className="me-2" /> Add Product
+            </Link>
+          </div>
+        ) : viewMode === "grid" ? (
+          <div className="row g-4">
+            {paginatedProducts.map((p) => (
+              <div className="col-xl-3 col-lg-4 col-md-6" key={p._id}>
+                <div style={{
+                  background: "white",
+                  borderRadius: "16px",
+                  overflow: "hidden",
+                  boxShadow: "0 1px 3px rgba(0,0,0,0.08)",
+                  transition: "all 0.3s ease",
+                  height: "100%",
+                  display: "flex",
+                  flexDirection: "column",
+                }}
+                onMouseEnter={(e) => {
+                  e.currentTarget.style.transform = "translateY(-4px)";
+                  e.currentTarget.style.boxShadow = "0 8px 24px rgba(0,0,0,0.12)";
+                }}
+                onMouseLeave={(e) => {
+                  e.currentTarget.style.transform = "translateY(0)";
+                  e.currentTarget.style.boxShadow = "0 1px 3px rgba(0,0,0,0.08)";
+                }}>
+                  <div style={{ position: "relative", height: "200px", background: "#f3f4f6" }}>
+                    <img
+                      src={p.productImages?.[0] || "https://via.placeholder.com/400x300?text=No+Image"}
+                      style={{ width: "100%", height: "100%", objectFit: "cover" }}
+                      alt={p.productName}
+                    />
+                    <div style={{ position: "absolute", top: "10px", right: "10px" }}>
+                      <span style={{ background: "#10b981", padding: "3px 10px", borderRadius: "20px", fontSize: "10px", fontWeight: 600, color: "white" }}>
+                        <FaCheckCircle className="me-1" size={8} /> Active
+                      </span>
+                    </div>
+                  </div>
+                  <div style={{ padding: "16px", flex: 1, display: "flex", flexDirection: "column" }}>
+                    <div className="mb-2">
+                      <span style={{
+                        background: "#f3f4f6",
+                        padding: "3px 10px",
+                        borderRadius: "20px",
+                        fontSize: "10px",
+                        fontWeight: 600,
+                        color: "#6b7280",
+                      }}>
+                        <FaTag className="me-1" size={8} /> {p.category || "Uncategorized"}
+                      </span>
+                    </div>
+                    <h6 className="fw-bold mb-2" style={{ color: "#1f2937", fontSize: "15px" }}>{p.productName}</h6>
+                    <div className="d-flex align-items-baseline gap-2 mb-3">
+                      <span className="fw-bold" style={{ color: "#2e7d32", fontSize: "22px" }}>₹{p.price}</span>
+                      <span style={{ color: "#6b7280", fontSize: "11px" }}>per {p.unit}</span>
+                    </div>
+                    <div className="mt-auto d-flex gap-2">
+                      <Link
+                        to={`/farmer/products/edit/${p._id}`}
+                        className="flex-fill text-center py-2"
+                        style={{ background: "#e0e7ff", color: "#4f46e5", textDecoration: "none", borderRadius: "8px", fontSize: "12px", fontWeight: 500 }}
+                      >
+                        <FaEdit className="me-1" size={11} /> Edit
+                      </Link>
+                      <button
+                        className="flex-fill py-2 border-0"
+                        style={{ background: "#fee2e2", color: "#dc2626", borderRadius: "8px", fontSize: "12px", fontWeight: 500 }}
+                        onClick={() => deleteProduct(p._id)}
+                      >
+                        <FaTrash className="me-1" size={11} /> Delete
+                      </button>
+                    </div>
+                  </div>
+                </div>
+              </div>
+            ))}
+          </div>
+        ) : (
+          <div style={{
+            background: "white",
+            borderRadius: "16px",
+            overflow: "hidden",
+            boxShadow: "0 1px 3px rgba(0,0,0,0.08)",
+          }}>
+            <div style={{ overflowX: "auto" }}>
+              <table style={{ width: "100%", borderCollapse: "collapse" }}>
+                <thead>
+                  <tr style={{ background: "#f9fafb", borderBottom: "1px solid #e5e7eb" }}>
+                    <th style={{ padding: "16px", textAlign: "left", fontSize: "12px", fontWeight: 600, color: "#6b7280" }}>Product</th>
+                    <th style={{ padding: "16px", textAlign: "left", fontSize: "12px", fontWeight: 600, color: "#6b7280" }}>Category</th>
+                    <th style={{ padding: "16px", textAlign: "left", fontSize: "12px", fontWeight: 600, color: "#6b7280" }}>Price</th>
+                    <th style={{ padding: "16px", textAlign: "left", fontSize: "12px", fontWeight: 600, color: "#6b7280" }}>Stock</th>
+                    <th style={{ padding: "16px", textAlign: "right", fontSize: "12px", fontWeight: 600, color: "#6b7280" }}>Actions</th>
+                  </tr>
+                </thead>
+                <tbody>
+                  {paginatedProducts.map((p) => (
+                    <tr key={p._id} style={{ borderBottom: "1px solid #f3f4f6" }}>
+                      <td style={{ padding: "12px 16px" }}>
+                        <div className="d-flex align-items-center gap-3">
+                          <img
+                            src={p.productImages?.[0] || "https://via.placeholder.com/48x48?text=No+Image"}
+                            style={{ width: "48px", height: "48px", borderRadius: "10px", objectFit: "cover" }}
+                            alt=""
+                          />
+                          <div>
+                            <p className="fw-semibold mb-0" style={{ fontSize: "14px", color: "#1f2937" }}>{p.productName}</p>
+                            <small style={{ color: "#6b7280", fontSize: "11px" }}>{p.unit}</small>
+                          </div>
+                        </div>
+                      </td>
+                      <td style={{ padding: "12px 16px", fontSize: "13px", color: "#4b5563" }}>{p.category || "—"}</td>
+                      <td style={{ padding: "12px 16px", fontWeight: 600, color: "#2e7d32", fontSize: "14px" }}>₹{p.price}</td>
+                      <td style={{ padding: "12px 16px", fontSize: "13px", color: "#4b5563" }}>
+                        {p.quantity} {p.unit}s
+                      </td>
+                      <td style={{ padding: "12px 16px", textAlign: "right" }}>
+                        <div className="d-flex gap-2 justify-content-end">
+                          <Link to={`/farmer/products/edit/${p._id}`} className="btn btn-sm btn-outline-primary">
+                            <FaEdit /> Edit
+                          </Link>
+                          <button className="btn btn-sm btn-outline-danger" onClick={() => deleteProduct(p._id)}>
+                            <FaTrash /> Delete
+                          </button>
+                        </div>
+                      </td>
+                    </tr>
+                  ))}
+                </tbody>
+              </table>
             </div>
           </div>
         )}
 
-        {/* Products Grid */}
-        <div className="row g-4">
-          {products.map(p => (
-            <div className="col-lg-4 col-md-6" key={p._id}>
-              <div className="card border-0 shadow-sm h-100 transition-all hover-lift">
-                {/* Product Image with Status Badge */}
-                <div className="position-relative overflow-hidden rounded-top-4">
-                  <img
-                    src={p.productImages?.[0] || "/placeholder.png"}
-                    className="card-img-top product-image"
-                    alt={p.productName}
-                  />
-                  <div className="position-absolute top-3 end-3">
-                    {!p.isActive ? (
-                      <span className="badge bg-danger px-3 py-2 rounded-pill">
-                        <FaClock className="me-1" />
-                        Expired
-                      </span>
-                    ) : (
-                      <span className="badge bg-success px-3 py-2 rounded-pill">
-                        Active
-                      </span>
-                    )}
-                  </div>
-                </div>
-
-                <div className="card-body p-4 d-flex flex-column">
-                  {/* Product Info */}
-                  <h5 className="fw-bold mb-2 text-truncate">{p.productName}</h5>
-                  
-                  <div className="d-flex align-items-center mb-3">
-                    <FaTag className="text-success me-2" />
-                    <span className="text-muted">{p.category}</span>
-                  </div>
-
-                  <div className="row g-3 mb-4">
-                    <div className="col-6">
-                      <div className="bg-light rounded-3 p-3 text-center">
-                        <div className="d-flex align-items-center justify-content-center mb-1">
-                          <FaRupeeSign className="text-success me-1" />
-                          <h6 className="fw-bold mb-0">Price</h6>
-                        </div>
-                        <p className="mb-0 fw-semibold">
-                          ₹{p.price} / {p.unit}
-                        </p>
-                      </div>
-                    </div>
-                    <div className="col-6">
-                      <div className="bg-light rounded-3 p-3 text-center">
-                        <div className="d-flex align-items-center justify-content-center mb-1">
-                          <FaWeight className="text-success me-1" />
-                          <h6 className="fw-bold mb-0">Unit</h6>
-                        </div>
-                        <p className="mb-0 fw-semibold text-capitalize">{p.unit}</p>
-                      </div>
-                    </div>
-                  </div>
-
-                  {/* Description Preview */}
-                  {p.description && (
-                    <p className="text-muted small mb-4 flex-grow-1">
-                      {p.description.length > 80 
-                        ? `${p.description.substring(0, 80)}...` 
-                        : p.description}
-                    </p>
-                  )}
-
-                  {/* Action Buttons */}
-                  <div className="d-flex gap-3 mt-auto">
-                    <Link
-                      to={`/products/${p._id}`}
-                      className="btn btn-outline-success flex-fill d-flex align-items-center justify-content-center"
-                    >
-                      <FaEye className="me-2" />
-                      View Details
-                    </Link>
-                    {/* EDIT */}
-  <Link
-    to={`/farmer/products/edit/${p._id}`}
-    className="btn btn-outline-primary"
-    title="Edit Product"
-  >
-    <FaEdit />
-  </Link>
-                    
-                    {p.isActive ? (
-                      <button
-                        className="btn btn-outline-danger d-flex align-items-center justify-content-center px-4"
-                        onClick={() => deleteProduct(p._id)}
-                        title="Delete Product"
-                      >
-                        <FaTrash />
-                      </button>
-                    ) : (
-                      <button
-                        className="btn btn-secondary d-flex align-items-center justify-content-center px-4"
-                        disabled
-                        title="Product Expired"
-                      >
-                        <FaClock />
-                      </button>
-                    )}
-                  </div>
-                </div>
-
-                {/* Card Footer with Additional Info */}
-                <div className="card-footer bg-transparent border-top-0 p-4 pt-0">
-                  <small className="text-muted">
-                    <FaClock className="me-1" />
-                    Listed on {new Date(p.createdAt).toLocaleDateString()}
-                  </small>
-                </div>
-              </div>
-            </div>
-          ))}
-        </div>
-
-        {/* Pagination Placeholder */}
-        {products.length > 0 && (
+        {/* Pagination */}
+        {filteredProducts.length > 0 && totalPages > 1 && (
           <div className="d-flex justify-content-center mt-5">
-            <nav>
-              <ul className="pagination">
-                <li className="page-item disabled">
-                  <span className="page-link">Previous</span>
-                </li>
-                <li className="page-item active">
-                  <span className="page-link">1</span>
-                </li>
-                <li className="page-item">
-                  <a className="page-link" href="#">2</a>
-                </li>
-                <li className="page-item">
-                  <a className="page-link" href="#">3</a>
-                </li>
-                <li className="page-item">
-                  <a className="page-link" href="#">Next</a>
-                </li>
-              </ul>
-            </nav>
+            <div className="d-flex gap-2">
+              <button
+                className="btn btn-outline-secondary"
+                onClick={() => setCurrentPage(p => Math.max(1, p - 1))}
+                disabled={currentPage === 1}
+                style={{ borderRadius: "10px" }}
+              >
+                <FaChevronLeft /> Prev
+              </button>
+              {[...Array(Math.min(totalPages, 5))].map((_, i) => (
+                <button
+                  key={i}
+                  className={`btn ${currentPage === i + 1 ? "btn-success" : "btn-outline-secondary"}`}
+                  onClick={() => setCurrentPage(i + 1)}
+                  style={{ minWidth: "40px", borderRadius: "10px" }}
+                >
+                  {i + 1}
+                </button>
+              ))}
+              <button
+                className="btn btn-outline-secondary"
+                onClick={() => setCurrentPage(p => Math.min(totalPages, p + 1))}
+                disabled={currentPage === totalPages}
+                style={{ borderRadius: "10px" }}
+              >
+                Next <FaChevronRight />
+              </button>
+            </div>
           </div>
         )}
       </div>
-
-      
     </div>
   );
 }

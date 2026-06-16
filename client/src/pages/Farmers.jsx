@@ -113,7 +113,7 @@ export default function Farmers() {
                 <div className="mb-3">
                   {farmer.profilePic ? (
                     <img
-                      src={farmer.profilePic}   // ✅ FIXED
+                      src={farmer.profilePic}
                       alt="profile"
                       className="farmer-img"
                     />
@@ -137,13 +137,6 @@ export default function Farmers() {
                 <span className="badge bg-success mb-3">
                   🌱 {farmer.productCount || 0} Products
                 </span>
-
-                {/* BUTTON */}
-                <div>
-                  <button className="btn btn-outline-success btn-sm">
-                    View Profile
-                  </button>
-                </div>
 
               </div>
 

@@ -1,5 +1,7 @@
-import React, { useEffect, useState, useRef } from "react";
+import React, { useEffect, useState } from "react";
 import API from "../api/axios";
+import { getSocket } from "../api/socket";
+import { sendRealtimeMessage } from "../api/realtimeMessages";
 import { Link } from "react-router-dom";
 
 export default function BuyerMessages() {
@@ -13,12 +15,47 @@ export default function BuyerMessages() {
   const [replyingTo, setReplyingTo] = useState(null);
   const [replyText, setReplyText] = useState("");
   const [sendingReply, setSendingReply] = useState(false);
-  const messagesEndRef = useRef(null);
 
   /* ============ LOAD MESSAGES ============ */
   useEffect(() => {
     loadInbox();
   }, []);
+
+  useEffect(() => {
+  const socket = getSocket();
+  if (!socket) {
+    console.log("❌ Socket not available");
+    return;
+  }
+
+  // ✅ CONNECTION DEBUG
+  socket.on("connect", () => {
+    console.log("✅ Connected:", socket.id);
+  });
+
+  socket.on("connect_error", (err) => {
+    console.error("❌ Socket error:", err.message);
+  });
+
+  const addIncomingMessage = (message) => {
+    console.log("📩 Incoming:", message);
+    setMessages(prev => {
+      if (prev.some(msg => msg._id === message._id)) return prev;
+      return [message, ...prev];
+    });
+  };
+
+  // ✅ LISTEN BOTH EVENTS
+  socket.on("message:received", addIncomingMessage);
+  socket.on("message:sent", addIncomingMessage);
+
+  return () => {
+    socket.off("message:received", addIncomingMessage);
+    socket.off("message:sent", addIncomingMessage);
+    socket.off("connect");
+    socket.off("connect_error");
+  };
+}, []);
 
   async function loadInbox() {
     try {
@@ -68,14 +105,12 @@ export default function BuyerMessages() {
     
     setSendingReply(true);
     try {
-      await API.post("/messages/send", {
+      await sendRealtimeMessage({
         receiverId: replyingTo.sender._id,
         productId: replyingTo.product?._id,
         text: replyText.trim(),
       });
       
-      // Refresh messages
-      loadInbox();
       setReplyText("");
       setReplyingTo(null);
       
@@ -134,8 +169,6 @@ export default function BuyerMessages() {
   /* ============ MESSAGE STATS ============ */
   const unreadCount = messages.filter(msg => !msg.read).length;
   const farmerMessages = messages.filter(msg => msg.sender?.role === "farmer").length;
-  const latestMessage = messages.length > 0 ? new Date(messages[0].createdAt) : null;
-
   return (
     <div className="container mt-4 mb-5">
       {/* HEADER */}

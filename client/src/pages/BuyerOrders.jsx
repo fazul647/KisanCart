@@ -315,16 +315,7 @@ export default function BuyerOrders() {
                           <small className="text-muted">Verified Farmer</small>
                         </div>
                       </div>
-                      <button
-                        className="btn btn-outline-success btn-sm w-100"
-                        onClick={() => {
-                          setActiveOrder(order);
-                          setShowMsg(true);
-                        }}
-                      >
-                        <i className="bi bi-chat-left-text me-2"></i>
-                        Message Farmer
-                      </button>
+                     
                     </div>
 
                     {/* ORDER ITEMS */}

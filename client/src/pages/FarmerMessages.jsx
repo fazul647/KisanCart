@@ -1,27 +1,64 @@
-import React, { useEffect, useState } from "react";
+import React, { useCallback, useEffect, useState } from "react";
 import API from "../api/axios";
+import { getSocket } from "../api/socket";
+import { sendRealtimeMessage } from "../api/realtimeMessages";
 
 export default function FarmerMessages() {
   const [messages, setMessages] = useState([]);
   const [replyText, setReplyText] = useState("");
   const [activeMsg, setActiveMsg] = useState(null);
 
-  useEffect(() => {
-    loadInbox();
-    API.patch("/messages/mark-read").catch(() => {});
-  }, []);
-
-  function loadInbox() {
+  const loadInbox = useCallback(() => {
     API.get("/messages/inbox")
       .then(res => setMessages(res.data.messages || []))
       .catch(err => console.error(err));
+  }, []);
+
+  useEffect(() => {
+    loadInbox();
+    API.patch("/messages/mark-read").catch(() => {});
+  }, [loadInbox]);
+
+  useEffect(() => {
+  const socket = getSocket();
+  if (!socket) {
+    console.log("❌ Socket not available");
+    return;
   }
 
+  // ✅ CONNECTION DEBUG
+  socket.on("connect", () => {
+    console.log("✅ Connected:", socket.id);
+  });
+
+  socket.on("connect_error", (err) => {
+    console.error("❌ Socket error:", err.message);
+  });
+
+  const addIncomingMessage = (message) => {
+    console.log("📩 Incoming:", message);
+    setMessages(prev => {
+      if (prev.some(msg => msg._id === message._id)) return prev;
+      return [message, ...prev];
+    });
+  };
+
+  // ✅ LISTEN BOTH EVENTS
+  socket.on("message:received", addIncomingMessage);
+  socket.on("message:sent", addIncomingMessage);
+
+  return () => {
+    socket.off("message:received", addIncomingMessage);
+    socket.off("message:sent", addIncomingMessage);
+    socket.off("connect");
+    socket.off("connect_error");
+  };
+}, []);
   async function sendReply() {
     if (!replyText.trim()) return alert("Type reply");
 
     try {
-      await API.post("/messages/reply", {
+      await sendRealtimeMessage({
         receiverId: activeMsg.sender._id, // buyer
         productId: activeMsg.product?._id,
         text: replyText,
@@ -30,8 +67,7 @@ export default function FarmerMessages() {
       alert("Reply sent");
       setReplyText("");
       setActiveMsg(null);
-      loadInbox();  
-    } catch (err) {
+    } catch {
       alert("Failed to send reply");
     }
   }

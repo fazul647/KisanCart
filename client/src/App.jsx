@@ -11,8 +11,7 @@ import ProductView from "./pages/ProductView";
 import FarmerProducts from "./pages/FarmerProducts";
 import Cart from "./pages/Cart";
 import FarmerOrders from "./pages/FarmerOrders";
-import FarmerMessages from "./pages/FarmerMessages";
-import BuyerMessages from "./pages/BuyerMessages";
+import Messages from "./pages/Messages";
 import BuyerOrders from "./pages/BuyerOrders";
 import BuyerDashboard from "./pages/BuyerDashboard";
 import Farmers from "./pages/Farmers";
@@ -25,6 +24,7 @@ import AdminOrders from "./pages/AdminOrders";
 import Chatbot from "./pages/Chatbot";
 import ForgotPassword from "./pages/ForgetPassword";
 import ResetPassword from "./pages/ResetPassword";
+import ChatPage from "./pages/ChatPage";
 
 
 
@@ -47,13 +47,13 @@ export default function App() {
         <Route path="/dashboard" element={<FarmerDashboard />} />
         <Route path="/profile" element={<Profile />} />
         <Route path="/buyer/profile" element={<Profile />} />
+        
         <Route path="/products" element={<Products />} />
         <Route path="/products/:id" element={<ProductView />} />
         <Route path="/farmer/products" element={<FarmerProducts />} />
         <Route path="/cart" element={<Cart />} />
         <Route path="/farmer/orders" element={<FarmerOrders />} />
-        <Route path="/messages" element={<FarmerMessages />} />
-        <Route path="/messages" element={<BuyerMessages />} />
+        <Route path="/messages" element={<ChatPage />} />
         <Route path="/buyer/orders" element={<BuyerOrders />} />
         <Route path="/buyer/dashboard" element={<BuyerDashboard />} />
         <Route path="/farmers" element={<Farmers />} />
@@ -66,6 +66,7 @@ export default function App() {
         <Route path="/chatbot" element={<Chatbot />} />
         <Route path="/forgot-password" element={<ForgotPassword />} />
         <Route path="/reset-password/:token" element={<ResetPassword />} />
+        
 
 
 

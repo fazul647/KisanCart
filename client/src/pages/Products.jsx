@@ -1,11 +1,12 @@
+// Products.jsx - Clean Modern Redesign with Product View Navigation
 import React, { useEffect, useState } from "react";
+import { useNavigate } from "react-router-dom";
 import API from "../api/axios";
-import { Link } from "react-router-dom";
-import ProductCard from "../components/ProductCard";
+import "../styles/Product.css";
+
 
 export default function Products() {
-  console.log("BUYER PRODUCTS PAGE LOADED");
-
+  const navigate = useNavigate();
   const [products, setProducts] = useState([]);
   const [filtered, setFiltered] = useState([]);
   const [loading, setLoading] = useState(true);
@@ -15,11 +16,11 @@ export default function Products() {
   const [priceSort, setPriceSort] = useState("default");
   const [categories, setCategories] = useState([]);
   const [addingToCart, setAddingToCart] = useState(null);
+  const [showFilters, setShowFilters] = useState(false);
 
-  /* ---------------- ADD TO CART ---------------- */
-  const addToCart = (p) => {
+  const addToCart = (p, e) => {
+    if (e) e.stopPropagation();
     setAddingToCart(p._id);
-
     const cart = JSON.parse(localStorage.getItem("kisan_cart")) || [];
     const existing = cart.find(item => item.productId === p._id);
 
@@ -47,24 +48,24 @@ export default function Products() {
           detail: { message: `${p.productName} added to cart`, type: "success" }
         })
       );
+       navigate("/cart");
     }, 500);
   };
 
-  /* ---------------- LOAD PRODUCTS ---------------- */
+  const viewProductDetails = (productId) => {
+    navigate(`/products/${productId}`);
+  };
+
   async function loadProducts() {
     try {
       setLoading(true);
       setError("");
-
       const res = await API.get("/crops/all");
       const list = res.data.products || [];
-
       setProducts(list);
       setFiltered(list);
 
-      const uniqueCategories = [
-        ...new Set(list.map(p => p.category).filter(Boolean))
-      ];
+      const uniqueCategories = [...new Set(list.map(p => p.category).filter(Boolean))];
       setCategories(uniqueCategories);
     } catch (err) {
       console.error("Failed to load products:", err);
@@ -78,120 +79,200 @@ export default function Products() {
     loadProducts();
   }, []);
 
-  /* ---------------- FILTER & SORT ---------------- */
   useEffect(() => {
     let result = [...products];
-
     const term = q.trim().toLowerCase();
     if (term) {
       result = result.filter(p =>
         (p.productName || "").toLowerCase().includes(term) ||
         (p.category || "").toLowerCase().includes(term) ||
-        (p.description || "").toLowerCase().includes(term) ||
         (p.farmer?.name || "").toLowerCase().includes(term)
       );
     }
-
     if (categoryFilter !== "all") {
       result = result.filter(p => p.category === categoryFilter);
     }
-
     if (priceSort === "low") {
       result.sort((a, b) => a.price - b.price);
     } else if (priceSort === "high") {
       result.sort((a, b) => b.price - a.price);
-    } else if (priceSort === "new") {
-      result.sort((a, b) => new Date(b.createdAt) - new Date(a.createdAt));
     }
-
     setFiltered(result);
   }, [q, categoryFilter, priceSort, products]);
 
+  const resetFilters = () => {
+    setQ("");
+    setCategoryFilter("all");
+    setPriceSort("default");
+  };
+
   return (
-    <div className="container mt-4 mb-5">
-
-      {/* HEADER */}
-      <div className="row align-items-center mb-4">
-        <div className="col-md-6">
-          <h1 className="fw-bold">Fresh Farm Products</h1>
-          <p className="text-muted">Direct from farmers to your doorstep</p>
-        </div>
-        <div className="col-md-6 text-md-end">
-          <Link to="/cart" className="btn btn-outline-success">
-            View Cart
-          </Link>
+    <div className="products-page">
+      {/* Simple Hero */}
+      <div className="page-header">
+        <div className="header-content">
+          <h1>Fresh Produce</h1>
+          <p>Direct from farmers to your table</p>
         </div>
       </div>
 
-      {/* ERROR */}
-      {error && <div className="alert alert-danger">{error}</div>}
+      <div className="products-wrapper">
+        {/* Top Bar */}
+        <div className="top-bar">
+          <div className="search-section">
+            <div className="search-box">
+              <svg className="search-svg" viewBox="0 0 24 24" fill="none" stroke="currentColor">
+                <circle cx="11" cy="11" r="8"/>
+                <line x1="21" y1="21" x2="16.65" y2="16.65"/>
+              </svg>
+              <input
+                type="text"
+                placeholder="Search products..."
+                value={q}
+                onChange={e => setQ(e.target.value)}
+              />
+            </div>
+          </div>
 
-      {/* SEARCH & FILTER */}
-      <div className="row g-3 mb-4">
-        <div className="col-md-6">
-          <input
-            className="form-control"
-            placeholder="Search products..."
-            value={q}
-            onChange={e => setQ(e.target.value)}
-          />
+          <div className="controls-section">
+            <button className="filter-toggle" onClick={() => setShowFilters(!showFilters)}>
+              <svg viewBox="0 0 24 24" fill="none" stroke="currentColor">
+                <line x1="4" y1="21" x2="4" y2="14"/>
+                <line x1="4" y1="10" x2="4" y2="3"/>
+                <line x1="12" y1="21" x2="12" y2="12"/>
+                <line x1="12" y1="8" x2="12" y2="3"/>
+                <line x1="20" y1="21" x2="20" y2="16"/>
+                <line x1="20" y1="12" x2="20" y2="3"/>
+                <line x1="2" y1="14" x2="6" y2="14"/>
+                <line x1="10" y1="12" x2="14" y2="12"/>
+                <line x1="18" y1="16" x2="22" y2="16"/>
+              </svg>
+              Filters
+            </button>
+
+            <select value={priceSort} onChange={e => setPriceSort(e.target.value)}>
+              <option value="default">Sort by</option>
+              <option value="low">Price: Low to High</option>
+              <option value="high">Price: High to Low</option>
+            </select>
+          </div>
         </div>
 
-        <div className="col-md-3">
-          <select
-            className="form-select"
-            value={categoryFilter}
-            onChange={e => setCategoryFilter(e.target.value)}
-          >
-            <option value="all">All Categories</option>
-            {categories.map(c => (
-              <option key={c} value={c}>{c}</option>
+        {/* Filters Panel */}
+        {showFilters && (
+          <div className="filters-panel">
+            <div className="filters-grid">
+              <div className="filter-group">
+                <label>Categories</label>
+                <div className="category-buttons">
+                  <button
+                    className={categoryFilter === "all" ? "active" : ""}
+                    onClick={() => setCategoryFilter("all")}
+                  >
+                    All
+                  </button>
+                  {categories.map(c => (
+                    <button
+                      key={c}
+                      className={categoryFilter === c ? "active" : ""}
+                      onClick={() => setCategoryFilter(c)}
+                    >
+                      {c}
+                    </button>
+                  ))}
+                </div>
+              </div>
+            </div>
+            <div className="filter-actions">
+              <button onClick={resetFilters}>Reset Filters</button>
+            </div>
+          </div>
+        )}
+
+        {/* Results Count */}
+        <div className="results-info">
+          <span>{filtered.length} products found</span>
+        </div>
+
+        {/* Error */}
+        {error && (
+          <div className="error-state">
+            <p>{error}</p>
+            <button onClick={loadProducts}>Try Again</button>
+          </div>
+        )}
+
+        {/* Loading */}
+        {loading && (
+          <div className="loading-state">
+            <div className="loader"></div>
+          </div>
+        )}
+
+        {/* Products Grid */}
+        {!loading && !error && (
+          <div className="products-grid">
+            {filtered.map(product => (
+              <div key={product._id} className="product-item">
+                <div className="product-image" onClick={() => viewProductDetails(product._id)}>
+                  {product.productImages?.[0] ? (
+                    <img src={product.productImages[0]} alt={product.productName} />
+                  ) : (
+                    <div className="image-placeholder">🌾</div>
+                  )}
+                  {product.quantity < 10 && (
+                    <span className="stock-warning">Low stock</span>
+                  )}
+                </div>
+
+                <div className="product-body">
+                  <h3 onClick={() => viewProductDetails(product._id)}>{product.productName}</h3>
+                  <p className="farmer">
+                    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor">
+                      <path d="M20 21v-2a4 4 0 0 0-4-4H8a4 4 0 0 0-4 4v2"/>
+                      <circle cx="12" cy="7" r="4"/>
+                    </svg>
+                    {product.farmer?.name || "Local Farmer"}
+                  </p>
+                  <div className="price-row">
+                    <span className="price">₹{product.price}</span>
+                    {product.unit && <span className="unit">/ {product.unit}</span>}
+                  </div>
+                  {product.category && (
+                    <span className="category-tag">{product.category}</span>
+                  )}
+                </div>
+
+                <div className="product-buttons">
+                  <button
+                    className="view-details-btn"
+                    onClick={() => viewProductDetails(product._id)}
+                  >
+                    View Details
+                  </button>
+                  <button
+                    className="cart-btn"
+                    onClick={(e) => addToCart(product, e)}
+                    disabled={addingToCart === product._id}
+                  >
+                    {addingToCart === product._id ? "Adding..." : "Add to Cart"}
+                  </button>
+                </div>
+              </div>
             ))}
-          </select>
-        </div>
+          </div>
+        )}
 
-        <div className="col-md-3">
-          <select
-            className="form-select"
-            value={priceSort}
-            onChange={e => setPriceSort(e.target.value)}
-          >
-            <option value="default">Sort by</option>
-            <option value="new">Newest</option>
-            <option value="low">Price: Low → High</option>
-            <option value="high">Price: High → Low</option>
-          </select>
-        </div>
+        {/* Empty State */}
+        {!loading && !error && filtered.length === 0 && (
+          <div className="empty-state">
+            <div className="empty-icon">🌱</div>
+            <h3>No products found</h3>
+            <p>Try adjusting your search or filters</p>
+            <button onClick={resetFilters}>Clear filters</button>
+          </div>
+        )}
       </div>
-
-      {/* LOADING */}
-      {loading && (
-        <div className="text-center py-5">
-          <div className="spinner-border text-success"></div>
-        </div>
-      )}
-
-      {/* PRODUCTS GRID (IMPORTANT PART) */}
-      {!loading && (
-        <div className="row row-cols-1 row-cols-md-2 row-cols-lg-3 row-cols-xl-4 g-4 align-items-stretch">
-
-          {filtered.map(p => (
-            <ProductCard
-              key={p._id}
-              p={p}
-              addToCart={addToCart}
-              addingToCart={addingToCart}
-            />
-          ))}
-        </div>
-      )}
-
-      {/* EMPTY STATE */}
-      {!loading && filtered.length === 0 && (
-        <div className="text-center mt-5">
-          <h4>No products found</h4>
-        </div>
-      )}
     </div>
   );
 }
